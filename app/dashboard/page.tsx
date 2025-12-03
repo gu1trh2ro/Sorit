@@ -16,27 +16,30 @@ export default function Dashboard() {
     const totalSlots = todaySlots.length;
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white">
+        <div className="min-h-screen bg-gray-50 text-gray-900">
             <NavBar />
 
-            <main className="pt-24 pb-12 px-8 max-w-7xl mx-auto">
-                <h1 className="text-4xl font-bold mb-8 text-gradient-cyan-magenta">
-                    대시보드
-                </h1>
+            <main className="pt-32 pb-12 px-8 max-w-7xl mx-auto">
+                <div className="mb-12">
+                    <h1 className="text-5xl font-black mb-4 text-black tracking-tighter">
+                        DASHBOARD
+                    </h1>
+                    <p className="text-gray-500">Real-time studio status and analytics</p>
+                </div>
 
                 {/* Stats Section */}
                 <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                    <div className="bg-[#1a1a1a] p-6 rounded-lg border border-[#333]">
-                        <h3 className="text-[#a0a0a0] mb-2">총 합주실</h3>
-                        <p className="text-4xl font-bold text-[#00f5ff]">{totalRooms}개</p>
+                    <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
+                        <h3 className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">Total Studios</h3>
+                        <p className="text-5xl font-black text-black">{totalRooms}</p>
                     </div>
-                    <div className="bg-[#1a1a1a] p-6 rounded-lg border border-[#333]">
-                        <h3 className="text-[#a0a0a0] mb-2">오늘 예약 가능</h3>
-                        <p className="text-4xl font-bold text-[#00f5ff]">{availableSlots} / {totalSlots}</p>
+                    <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
+                        <h3 className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">Available Slots</h3>
+                        <p className="text-5xl font-black text-blue-600">{availableSlots} <span className="text-2xl text-gray-300 font-light">/ {totalSlots}</span></p>
                     </div>
-                    <div className="bg-[#1a1a1a] p-6 rounded-lg border border-[#333]">
-                        <h3 className="text-[#a0a0a0] mb-2">운영 시간</h3>
-                        <p className="text-2xl font-bold text-white">10:00 - 24:00</p>
+                    <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
+                        <h3 className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">Operating Hours</h3>
+                        <p className="text-3xl font-bold text-black">10:00 - 24:00</p>
                     </div>
                 </section>
 
@@ -45,8 +48,9 @@ export default function Dashboard() {
 
                 {/* Room List Section */}
                 <section>
-                    <h2 className="text-2xl font-bold text-[#00f5ff] mb-6">
-                        합주실 검색
+                    <h2 className="text-2xl font-bold text-black mb-6 flex items-center gap-2">
+                        <span className="w-2 h-8 bg-blue-500 rounded-full"></span>
+                        Search Studios
                     </h2>
                     <RoomSearch initialRooms={rooms} />
                 </section>

@@ -27,18 +27,18 @@ export default function DashboardCharts({ rooms, todaySlots }: Props) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
             {/* Capacity Chart */}
-            <div className="bg-[#1a1a1a] p-6 rounded-lg border border-[#333]">
-                <h3 className="text-xl font-bold text-[#00f5ff] mb-6">합주실 수용 인원</h3>
-                <div className="space-y-4">
+            <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
+                <h3 className="text-xl font-bold text-black mb-6">Studio Capacity</h3>
+                <div className="space-y-6">
                     {rooms.map(room => (
                         <div key={room.id}>
-                            <div className="flex justify-between text-sm text-[#a0a0a0] mb-1">
+                            <div className="flex justify-between text-sm text-gray-500 mb-2 font-medium">
                                 <span>{room.name}</span>
-                                <span>{room.capacity}명</span>
+                                <span>{room.capacity} People</span>
                             </div>
-                            <div className="w-full bg-[#333] h-2 rounded-full overflow-hidden">
+                            <div className="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
                                 <div
-                                    className="bg-gradient-to-r from-[#00f5ff] to-[#7000ff] h-full"
+                                    className="bg-gradient-to-r from-blue-400 to-blue-600 h-full rounded-full"
                                     style={{ width: `${(room.capacity / maxCapacity) * 100}%` }}
                                 ></div>
                             </div>
@@ -48,33 +48,33 @@ export default function DashboardCharts({ rooms, todaySlots }: Props) {
             </div>
 
             {/* Availability Chart */}
-            <div className="bg-[#1a1a1a] p-6 rounded-lg border border-[#333]">
-                <h3 className="text-xl font-bold text-[#00f5ff] mb-6">오늘의 예약 현황</h3>
-                <div className="space-y-4">
+            <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
+                <h3 className="text-xl font-bold text-black mb-6">Today's Status</h3>
+                <div className="space-y-6">
                     {availabilityByRoom.map((item, index) => (
                         <div key={index}>
-                            <div className="flex justify-between text-sm text-[#a0a0a0] mb-1">
+                            <div className="flex justify-between text-sm text-gray-500 mb-2 font-medium">
                                 <span>{item.name}</span>
-                                <span>{item.available} / {item.total} 슬롯</span>
+                                <span>{item.available} / {item.total} Slots</span>
                             </div>
-                            <div className="w-full bg-[#333] h-2 rounded-full overflow-hidden">
+                            <div className="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
                                 <div
-                                    className={`h-full ${item.percentage > 50 ? 'bg-[#00f5ff]' : item.percentage > 20 ? 'bg-yellow-500' : 'bg-red-500'}`}
+                                    className={`h-full rounded-full ${item.percentage > 50 ? 'bg-green-500' : item.percentage > 20 ? 'bg-yellow-400' : 'bg-red-500'}`}
                                     style={{ width: `${item.percentage}%` }}
                                 ></div>
                             </div>
                         </div>
                     ))}
                 </div>
-                <div className="mt-4 flex gap-4 text-xs text-[#a0a0a0] justify-end">
-                    <div className="flex items-center gap-1">
-                        <span className="w-2 h-2 bg-[#00f5ff] rounded-full"></span> 여유
+                <div className="mt-6 flex gap-6 text-xs text-gray-500 justify-end font-medium">
+                    <div className="flex items-center gap-2">
+                        <span className="w-3 h-3 bg-green-500 rounded-full"></span> Good
                     </div>
-                    <div className="flex items-center gap-1">
-                        <span className="w-2 h-2 bg-yellow-500 rounded-full"></span> 보통
+                    <div className="flex items-center gap-2">
+                        <span className="w-3 h-3 bg-yellow-400 rounded-full"></span> Moderate
                     </div>
-                    <div className="flex items-center gap-1">
-                        <span className="w-2 h-2 bg-red-500 rounded-full"></span> 혼잡
+                    <div className="flex items-center gap-2">
+                        <span className="w-3 h-3 bg-red-500 rounded-full"></span> Busy
                     </div>
                 </div>
             </div>

@@ -1,42 +1,81 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Button from './Button';
 
+const BACKGROUND_IMAGES = [
+  "/images/KakaoTalk_20251203_155817460.jpg",
+  "/images/KakaoTalk_20251203_155817460_01.jpg",
+  "/images/KakaoTalk_20251203_155817460_02.jpg",
+  "/images/KakaoTalk_20251203_155817460_03.jpg",
+  "/images/KakaoTalk_20251203_155817460_04.jpg",
+  "/images/KakaoTalk_20251203_155817460_05.jpg",
+  "/images/KakaoTalk_20251203_155817460_06.jpg",
+  "/images/KakaoTalk_20251203_155817460_07.jpg",
+  "/images/KakaoTalk_20251203_155817460_08.jpg",
+  "/images/KakaoTalk_20251203_160044925.jpg",
+  "/images/KakaoTalk_20251203_160044925_01.jpg"
+];
+
 export default function Hero() {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % BACKGROUND_IMAGES.length);
+    }, 5000); // Change every 5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <section className="pt-32 pb-20 px-8 bg-gradient-to-b from-[#1a1a1a] to-[#0a0a0a]">
-      <div className="max-w-5xl mx-auto text-center">
-        {/* 메인 타이틀 */}
-        <h1 className="text-6xl font-bold text-gradient-cyan-magenta mb-6 glow-cyan">
-          팀 가능 시간 기반<br />
-          합주실 스마트 예약
+    <section className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden bg-gray-900">
+      {/* Background Slider */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/80 z-10"></div>
+        <div className="absolute inset-0 bg-black/40 z-10"></div>
+
+        {BACKGROUND_IMAGES.map((src, index) => (
+          <img
+            key={src}
+            src={src}
+            alt={`Band Background ${index + 1}`}
+            className={`
+              absolute inset-0 w-full h-full object-cover transition-opacity duration-[2000ms] ease-in-out
+              ${index === currentImageIndex ? 'opacity-100 scale-105' : 'opacity-0 scale-100'}
+            `}
+          />
+        ))}
+      </div>
+
+      <div className="relative z-20 text-center px-4 max-w-5xl mx-auto">
+        {/* Main Title */}
+        <h1 className="text-[100px] md:text-[150px] font-black leading-none tracking-tighter text-white drop-shadow-2xl mb-6 animate-fade-in-up mix-blend-overlay">
+          SORIT
         </h1>
-        
-        {/* 설명 */}
-        <p className="text-xl text-[#a0a0a0] mb-4 leading-relaxed">
-          팀원들의 일정을 일일이 확인하고 합주실 예약 가능 시간을 찾느라 시간 낭비하셨나요?
+
+        <p className="text-2xl md:text-3xl text-white/90 font-light tracking-wide mb-12 max-w-2xl mx-auto drop-shadow-md">
+          The Perfect Space for Your <span className="font-bold text-white">Masterpiece</span>
         </p>
-        <p className="text-lg text-[#808080] mb-10">
-          팀별 가능 시간을 미리 등록하면, 빈 합주실을 한눈에 보고 클릭 한 번으로 예약할 수 있습니다.
-        </p>
-        
-        {/* CTA 버튼 */}
-        <div className="flex gap-4 justify-center">
-          <Button 
-            variant="primary" 
+
+        {/* CTA Buttons */}
+        <div className="flex gap-6 justify-center">
+          <Button
+            variant="primary"
             onClick={() => alert('예약 페이지로 이동')}
+            className="shadow-xl hover:shadow-2xl hover:scale-105 border-none bg-white text-black hover:bg-gray-100"
           >
-            지금 예약하기
+            BOOK NOW
           </Button>
-          <Button 
-            variant="secondary" 
+          <Button
+            variant="outline"
             onClick={() => alert('팀 설정 페이지로 이동')}
+            className="border-2 border-white text-white bg-transparent hover:bg-white/20 hover:text-white hover:border-white backdrop-blur-sm"
           >
-            팀 가능 시간 설정
+            MANAGE TEAM
           </Button>
         </div>
       </div>
     </section>
   );
 }
-

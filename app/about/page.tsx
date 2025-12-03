@@ -9,48 +9,49 @@ export const metadata: Metadata = {
 
 export default function About() {
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white">
+        <div className="min-h-screen bg-gray-50 text-gray-900">
             <NavBar />
 
-            <main className="pt-24 pb-12 px-8 max-w-4xl mx-auto">
-                <h1 className="text-4xl font-bold mb-8 text-gradient-cyan-magenta">
-                    소리터 소개
+            <main className="pt-32 pb-12 px-8 max-w-4xl mx-auto">
+                <h1 className="text-5xl font-black mb-8 text-black tracking-tighter">
+                    ABOUT SORIT
                 </h1>
 
-                <section className="mb-12">
-                    <h2 className="text-2xl font-bold text-[#00f5ff] mb-4">
-                        프로젝트 개요
+                <section className="mb-12 bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
+                    <h2 className="text-2xl font-bold text-black mb-4 flex items-center gap-2">
+                        <span className="w-1.5 h-8 bg-blue-500 rounded-full"></span>
+                        Project Overview
                     </h2>
-                    <p className="text-[#a0a0a0] leading-relaxed mb-4">
-                        소리터(Sorit)는 부산대학교 밴드부를 위한 합주실 예약 및 관리 시스템입니다.
-                        기존의 불투명한 예약 시스템을 개선하여, 실시간으로 합주실 현황을 파악하고
-                        효율적으로 예약할 수 있는 대시보드를 제공합니다.
+                    <p className="text-gray-600 leading-relaxed mb-4">
+                        Sorit is a smart reservation system designed for the Pusan National University Band.
+                        We aim to solve the inefficiency of traditional booking methods by providing real-time availability and instant reservations.
                     </p>
-                    <p className="text-[#a0a0a0] leading-relaxed">
-                        이 프로젝트는 Next.js App Router와 Tailwind CSS를 사용하여 구축되었으며,
-                        데이터 시각화와 인터랙티브한 사용자 경험을 목표로 합니다.
+                    <p className="text-gray-600 leading-relaxed">
+                        Built with Next.js App Router and Tailwind CSS, focusing on a clean, modern, and vibrant user experience.
                     </p>
                 </section>
 
-                <section className="mb-12">
-                    <h2 className="text-2xl font-bold text-[#00f5ff] mb-4">
-                        주요 기능
+                <section className="mb-12 bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
+                    <h2 className="text-2xl font-bold text-black mb-4 flex items-center gap-2">
+                        <span className="w-1.5 h-8 bg-purple-500 rounded-full"></span>
+                        Key Features
                     </h2>
-                    <ul className="list-disc list-inside text-[#a0a0a0] space-y-2">
-                        <li>실시간 합주실 예약 현황 확인</li>
-                        <li>합주실별 장비 및 수용 인원 상세 정보</li>
-                        <li>직관적인 대시보드를 통한 데이터 시각화</li>
-                        <li>빠른 검색 및 필터링 기능</li>
+                    <ul className="list-disc list-inside text-gray-600 space-y-2 ml-2">
+                        <li>Real-time studio availability check</li>
+                        <li>Detailed equipment and capacity information</li>
+                        <li>Interactive dashboard with data visualization</li>
+                        <li>Fast search and filtering</li>
                     </ul>
                 </section>
 
                 <section>
-                    <h2 className="text-2xl font-bold text-[#00f5ff] mb-4">
-                        팀원
+                    <h2 className="text-2xl font-bold text-black mb-4 flex items-center gap-2">
+                        <span className="w-1.5 h-8 bg-green-500 rounded-full"></span>
+                        Team
                     </h2>
-                    <div className="bg-[#1a1a1a] p-6 rounded-lg border border-[#333]">
-                        <p className="font-bold text-white mb-2">개발자</p>
-                        <p className="text-[#a0a0a0]">부산대학교 정보컴퓨터공학부</p>
+                    <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                        <p className="font-bold text-black mb-1">Developer</p>
+                        <p className="text-gray-500">Dept. of CSE, Pusan National University</p>
                     </div>
                 </section>
             </main>
