@@ -40,9 +40,11 @@ export default function Home() {
               Book your session instantly
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {todaySlots.map((slot) => (
-                <TimeSlotCard key={slot.id} slot={slot} />
-              ))}
+              {todaySlots
+                .filter(slot => slot.room.id === '1') // 외부 합주실 제외 (실시간 데이터 연동 불가)
+                .map((slot) => (
+                  <TimeSlotCard key={slot.id} slot={slot} />
+                ))}
             </div>
           </div>
         </section>

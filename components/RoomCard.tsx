@@ -39,6 +39,20 @@ export default function RoomCard({ room }: RoomCardProps) {
           ))}
         </ul>
       </div>
+
+      {/* External Link Button */}
+      {room.externalLink && (
+        <div className="mt-6">
+          <a
+            href={room.externalLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full py-3 px-4 bg-gray-900 text-white text-center rounded-xl font-bold text-sm hover:bg-gray-800 transition-colors shadow-md hover:shadow-lg"
+          >
+            예약 현황 확인하기 ↗
+          </a>
+        </div>
+      )}
     </div>
   );
 }

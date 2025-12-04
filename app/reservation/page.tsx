@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 
@@ -21,13 +22,63 @@ export type ReservationState = {
     selectedSlots: Record<string, string[]>; // "YYYY-MM-DD": ["13:00", "13:30"]
 };
 
-export default function ReservationPage() {
+function ReservationContent() {
+    const searchParams = useSearchParams();
     const [state, setState] = useState<ReservationState>({
         step: 1,
         eventInfo: { title: '', type: '합주', headcount: 4 },
         dates: [],
         selectedSlots: {},
     });
+
+    // Initialize state from query params if available
+    useEffect(() => {
+        const dateParam = searchParams.get('date');
+        const startTimeParam = searchParams.get('startTime');
+        const endTimeParam = searchParams.get('endTime');
+
+        if (dateParam && startTimeParam && endTimeParam) {
+            // Calculate 30-min slots between startTime and endTime
+            const slots: string[] = [];
+            let current = startTimeParam;
+
+            // Simple loop to generate slots (assuming HH:MM format and 30 min intervals)
+            // This is a basic implementation. For robust handling, date-fns or similar is better.
+            // But for now, let's just add the start time and maybe one more if it's 1 hour.
+            // Actually, let's just add the start time as a selected slot for now, 
+            // or try to cover the range.
+
+            // Let's assume the mock data slots are 1 hour long (e.g. 18:00-19:00)
+            // So we need 18:00 and 18:30.
+
+            const startHour = parseInt(startTimeParam.split(':')[0]);
+            const startMin = parseInt(startTimeParam.split(':')[1]);
+            const endHour = parseInt(endTimeParam.split(':')[0]);
+            const endMin = parseInt(endTimeParam.split(':')[1]);
+
+            let currentHour = startHour;
+            let currentMin = startMin;
+
+            while (currentHour < endHour || (currentHour === endHour && currentMin < endMin)) {
+                const timeStr = `${currentHour.toString().padStart(2, '0')}:${currentMin.toString().padStart(2, '0')}`;
+                slots.push(timeStr);
+
+                currentMin += 30;
+                if (currentMin >= 60) {
+                    currentHour++;
+                    currentMin = 0;
+                }
+            }
+
+            setState(prev => ({
+                ...prev,
+                dates: [dateParam],
+                selectedSlots: {
+                    [dateParam]: slots
+                }
+            }));
+        }
+    }, [searchParams]);
 
     const nextStep = () => setState(prev => ({ ...prev, step: prev.step + 1 }));
     const prevStep = () => setState(prev => ({ ...prev, step: prev.step - 1 }));
@@ -107,5 +158,13 @@ export default function ReservationPage() {
 
             <Footer />
         </div>
+    );
+}
+
+export default function ReservationPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <ReservationContent />
+        </Suspense>
     );
 }

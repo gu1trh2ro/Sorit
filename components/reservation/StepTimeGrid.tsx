@@ -10,11 +10,11 @@ interface StepTimeGridProps {
     eventType: string;
 }
 
-const TIME_SLOTS = Array.from({ length: 24 }, (_, i) => {
+const TIME_SLOTS = Array.from({ length: 30 }, (_, i) => {
     const hour = Math.floor(i / 2) + 9; // Start from 09:00
     const minute = i % 2 === 0 ? '00' : '30';
     return `${hour.toString().padStart(2, '0')}:${minute}`;
-}).filter(time => parseInt(time.split(':')[0]) < 22); // End at 22:00
+}).filter(time => parseInt(time.split(':')[0]) < 24); // End at 23:30
 
 export default function StepTimeGrid({ dates, selectedSlots, onChange, onNext, eventType }: StepTimeGridProps) {
     const [isDragging, setIsDragging] = useState(false);
@@ -43,22 +43,29 @@ export default function StepTimeGrid({ dates, selectedSlots, onChange, onNext, e
                 // Conflict Rule:
                 // If current event is '합주' (Band Practice), it conflicts with existing '합주'.
                 // If current event is NOT '합주' (e.g. Personal Practice), it does NOT conflict with '합주'.
-                // (User rule: "Only 'Band Practice' category doesn't overlap")
-
-                // So we only mark as occupied if:
-                // 1. Current event is '합주' AND Existing event is '합주'
-                // OR
-                // 2. Maybe we should block if existing is '합주' regardless? 
-                //    User said: "Can we make it so that we can't select times where there is a Band Practice?"
-                //    But also said: "Band and Personal can overlap".
-                //    So if I am Personal, I CAN select Band times.
-                //    So only block if I am Band.
 
                 const isConflict = eventType === '합주' && res.event_type === '합주';
 
                 if (isConflict) {
                     if (!occupied[res.date]) occupied[res.date] = [];
-                    occupied[res.date].push(res.start_time);
+                    // Ensure start_time matches HH:MM format (remove seconds if present)
+                    const startTime = res.start_time.slice(0, 5);
+                    if (!occupied[res.date].includes(startTime)) {
+                        occupied[res.date].push(startTime);
+                    }
+
+                    // Fill all 30-min slots between start and end
+                    const start = parseInt(res.start_time.split(':')[0]) * 60 + parseInt(res.start_time.split(':')[1]);
+                    const end = parseInt(res.end_time.split(':')[0]) * 60 + parseInt(res.end_time.split(':')[1]);
+
+                    for (let t = start + 30; t < end; t += 30) {
+                        const h = Math.floor(t / 60).toString().padStart(2, '0');
+                        const m = (t % 60).toString().padStart(2, '0');
+                        const timeStr = `${h}:${m}`;
+                        if (!occupied[res.date].includes(timeStr)) {
+                            occupied[res.date].push(timeStr);
+                        }
+                    }
                 }
             });
 

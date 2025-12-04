@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { TimeSlot } from '@/types';
 import Button from './Button';
 
@@ -8,16 +9,26 @@ interface TimeSlotCardProps {
 }
 
 export default function TimeSlotCard({ slot }: TimeSlotCardProps) {
+  const router = useRouter();
+
   const handleReserve = () => {
     if (slot.available) {
-      alert(`${slot.room.name} ${slot.startTime}-${slot.endTime} 예약하기`);
+      // 예약 페이지로 이동하며 쿼리 파라미터 전달
+      const query = new URLSearchParams({
+        date: slot.date,
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        roomName: slot.room.name
+      }).toString();
+
+      router.push(`/reservation?${query}`);
     }
   };
 
   return (
     <div className={`bg-white rounded-xl p-6 border transition-all duration-300 ${slot.available
-        ? 'border-green-400 shadow-md hover:shadow-lg hover:border-green-500'
-        : 'border-gray-200 opacity-75'
+      ? 'border-green-400 shadow-md hover:shadow-lg hover:border-green-500'
+      : 'border-gray-200 opacity-75'
       }`}>
       {/* 합주실 이름 */}
       <h4 className="text-xl font-bold text-gray-900 mb-2">

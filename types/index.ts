@@ -7,6 +7,7 @@ export interface Room {
   equipment: string[];
   openAt: string; // "10:00"
   closeAt: string; // "24:00"
+  externalLink?: string; // 외부 예약 링크
 }
 
 // 시간 슬롯 타입
