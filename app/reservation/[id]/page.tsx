@@ -1,0 +1,257 @@
+'use client';
+
+import { useState, useEffect, use } from 'react';
+import { useRouter } from 'next/navigation';
+import NavBar from '@/components/NavBar';
+import Footer from '@/components/Footer';
+import Button from '@/components/Button';
+import { supabase } from '@/lib/supabase';
+
+import VotingTimeGrid from '@/components/reservation/VotingTimeGrid';
+
+type PollData = {
+    id: string;
+    title: string;
+    event_type: string;
+    headcount: number;
+    dates: string[];
+    is_closed: boolean;
+};
+
+type VoteData = {
+    user_name: string;
+    selected_slots: Record<string, string[]>;
+};
+
+export default function VotingPage({ params }: { params: Promise<{ id: string }> }) {
+    // Unwrap params using React.use()
+    const { id } = use(params);
+
+    const router = useRouter();
+    const [poll, setPoll] = useState<PollData | null>(null);
+    const [existingVotes, setExistingVotes] = useState<VoteData[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [myName, setMyName] = useState('');
+    const [mySlots, setMySlots] = useState<Record<string, string[]>>({});
+
+    // Confirmation State
+    const [confirmDate, setConfirmDate] = useState('');
+    const [confirmTime, setConfirmTime] = useState('');
+
+    useEffect(() => {
+        const fetchData = async () => {
+            if (!id) return;
+
+            try {
+                // 1. Fetch Poll Info
+                const { data: pollData, error: pollError } = await supabase
+                    .from('scheduling_polls')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+
+                if (pollError) throw pollError;
+                setPoll(pollData);
+
+                // 2. Fetch Existing Votes
+                const { data: votesData, error: votesError } = await supabase
+                    .from('scheduling_votes')
+                    .select('*')
+                    .eq('poll_id', id);
+
+                if (votesError) throw votesError;
+                setExistingVotes(votesData || []);
+
+            } catch (error) {
+                console.error('Error fetching poll:', error);
+                alert('투표 정보를 불러오는데 실패했습니다.');
+                router.push('/');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [id, router]);
+
+    const handleSubmitVote = async () => {
+        if (!myName.trim()) {
+            alert('이름을 입력해주세요!');
+            return;
+        }
+        if (Object.keys(mySlots).length === 0) {
+            alert('가능한 시간을 최소 하나 이상 선택해주세요!');
+            return;
+        }
+
+        try {
+            const { error } = await supabase
+                .from('scheduling_votes')
+                .insert({
+                    poll_id: id,
+                    user_name: myName,
+                    selected_slots: mySlots,
+                });
+
+            if (error) throw error;
+
+            alert('투표가 완료되었습니다!');
+            window.location.reload(); // Refresh to show new data
+
+        } catch (error) {
+            console.error('Error submitting vote:', error);
+            alert('투표 저장 중 오류가 발생했습니다.');
+        }
+    };
+
+    const handleConfirmReservation = async () => {
+        if (!confirmDate || !confirmTime) {
+            alert('확정할 날짜와 시간을 입력해주세요.');
+            return;
+        }
+        if (!poll) return;
+
+        try {
+            // 1. Create Reservation
+            const { error: reservationError } = await supabase
+                .from('reservations')
+                .insert({
+                    room_id: 1, // Default to Room 1 for now
+                    user_name: poll.title, // Use poll title as reservation name
+                    date: confirmDate,
+                    start_time: confirmTime,
+                    end_time: confirmTime, // TODO: Add duration logic if needed
+                    status: 'confirmed'
+                });
+
+            if (reservationError) throw reservationError;
+
+            // 2. Close Poll (Optional)
+            await supabase
+                .from('scheduling_polls')
+                .update({ is_closed: true })
+                .eq('id', id);
+
+            alert('예약이 확정되었습니다! 대시보드에서 확인할 수 있습니다.');
+            router.push('/dashboard');
+
+        } catch (error) {
+            console.error('Error confirming reservation:', error);
+            alert('예약 확정 중 오류가 발생했습니다.');
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            </div>
+        );
+    }
+
+    if (!poll) return null;
+
+    return (
+        <div className="min-h-screen bg-gray-50 flex flex-col">
+            <NavBar />
+
+            <main className="flex-grow pt-32 pb-20 px-4">
+                <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
+
+                    {/* Header */}
+                    <div className="p-8 border-b border-gray-100 bg-gray-50/50">
+                        <div className="flex items-center justify-between mb-4">
+                            <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">
+                                {poll.event_type}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                                {existingVotes.length}명 참여 중 / 목표 {poll.headcount}명
+                            </span>
+                        </div>
+                        <h1 className="text-3xl font-black text-gray-900 mb-2">{poll.title}</h1>
+                        <p className="text-gray-500">
+                            가능한 시간을 모두 선택해주세요. 진한 색일수록 더 많은 멤버가 가능한 시간입니다.
+                        </p>
+                    </div>
+
+                    <div className="p-8 space-y-12">
+                        {/* Section 1: Vote */}
+                        <section>
+                            <h2 className="text-xl font-bold text-gray-900 mb-6">내 시간 투표하기</h2>
+
+                            {/* Name Input */}
+                            <div className="mb-6 max-w-md">
+                                <label className="block text-sm font-bold text-gray-700 mb-2">이름</label>
+                                <input
+                                    type="text"
+                                    value={myName}
+                                    onChange={(e) => setMyName(e.target.value)}
+                                    placeholder="본인 이름을 입력하세요"
+                                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 outline-none transition-all"
+                                />
+                            </div>
+
+                            {/* Time Grid */}
+                            <div className="mb-6">
+                                <VotingTimeGrid
+                                    dates={poll.dates}
+                                    existingVotes={existingVotes}
+                                    mySlots={mySlots}
+                                    onChange={setMySlots}
+                                />
+                            </div>
+
+                            <Button
+                                variant="primary"
+                                onClick={handleSubmitVote}
+                                className="w-full py-4 text-lg shadow-lg"
+                            >
+                                투표 완료하기
+                            </Button>
+                        </section>
+
+                        <hr className="border-gray-100" />
+
+                        {/* Section 2: Confirm (Manager Only) */}
+                        <section className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+                            <h2 className="text-xl font-bold text-gray-900 mb-2">최종 시간 확정</h2>
+                            <p className="text-sm text-gray-500 mb-6">모든 멤버의 투표가 끝나면 최종 시간을 확정해주세요.</p>
+
+                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1">날짜 (YYYY-MM-DD)</label>
+                                    <input
+                                        type="date"
+                                        value={confirmDate}
+                                        onChange={(e) => setConfirmDate(e.target.value)}
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 outline-none"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1">시간 (HH:MM)</label>
+                                    <input
+                                        type="time"
+                                        value={confirmTime}
+                                        onChange={(e) => setConfirmTime(e.target.value)}
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 outline-none"
+                                    />
+                                </div>
+                            </div>
+
+                            <Button
+                                variant="outline"
+                                onClick={handleConfirmReservation}
+                                className="w-full py-3 bg-white hover:bg-gray-50"
+                            >
+                                이 시간으로 예약 확정하기
+                            </Button>
+                        </section>
+                    </div>
+
+                </div>
+            </main>
+
+            <Footer />
+        </div>
+    );
+}

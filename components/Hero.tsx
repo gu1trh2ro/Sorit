@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import Button from './Button';
 
 const BACKGROUND_IMAGES = [
@@ -60,13 +61,14 @@ export default function Hero() {
 
         {/* CTA Buttons */}
         <div className="flex gap-6 justify-center">
-          <Button
-            variant="primary"
-            onClick={() => alert('예약 페이지로 이동')}
-            className="shadow-xl hover:shadow-2xl hover:scale-105 border-none bg-white text-black hover:bg-gray-100"
-          >
-            BOOK NOW
-          </Button>
+          <Link href="/reservation">
+            <Button
+              variant="primary"
+              className="shadow-xl hover:shadow-2xl hover:scale-105 border-none bg-white text-black hover:bg-gray-100"
+            >
+              BOOK NOW
+            </Button>
+          </Link>
           <Button
             variant="outline"
             onClick={() => alert('팀 설정 페이지로 이동')}
