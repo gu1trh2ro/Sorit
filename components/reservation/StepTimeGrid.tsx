@@ -1,13 +1,13 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import Button from '@/components/Button';
+import { supabase } from '@/lib/supabase';
 
 interface StepTimeGridProps {
     dates: string[];
     selectedSlots: Record<string, string[]>;
     onChange: (slots: Record<string, string[]>) => void;
     onNext: () => void;
+    eventType: string;
 }
 
 const TIME_SLOTS = Array.from({ length: 24 }, (_, i) => {
@@ -16,11 +16,62 @@ const TIME_SLOTS = Array.from({ length: 24 }, (_, i) => {
     return `${hour.toString().padStart(2, '0')}:${minute}`;
 }).filter(time => parseInt(time.split(':')[0]) < 22); // End at 22:00
 
-export default function StepTimeGrid({ dates, selectedSlots, onChange, onNext }: StepTimeGridProps) {
+export default function StepTimeGrid({ dates, selectedSlots, onChange, onNext, eventType }: StepTimeGridProps) {
     const [isDragging, setIsDragging] = useState(false);
     const [dragMode, setDragMode] = useState<'select' | 'deselect'>('select');
+    const [occupiedSlots, setOccupiedSlots] = useState<Record<string, string[]>>({});
+
+    // Fetch existing reservations
+    useEffect(() => {
+        const fetchReservations = async () => {
+            if (dates.length === 0) return;
+
+            const { data, error } = await supabase
+                .from('reservations')
+                .select('date, start_time, end_time, event_type')
+                .in('date', dates)
+                .eq('status', 'confirmed');
+
+            if (error) {
+                console.error('Error fetching reservations:', error);
+                return;
+            }
+
+            const occupied: Record<string, string[]> = {};
+
+            data?.forEach(res => {
+                // Conflict Rule:
+                // If current event is '합주' (Band Practice), it conflicts with existing '합주'.
+                // If current event is NOT '합주' (e.g. Personal Practice), it does NOT conflict with '합주'.
+                // (User rule: "Only 'Band Practice' category doesn't overlap")
+
+                // So we only mark as occupied if:
+                // 1. Current event is '합주' AND Existing event is '합주'
+                // OR
+                // 2. Maybe we should block if existing is '합주' regardless? 
+                //    User said: "Can we make it so that we can't select times where there is a Band Practice?"
+                //    But also said: "Band and Personal can overlap".
+                //    So if I am Personal, I CAN select Band times.
+                //    So only block if I am Band.
+
+                const isConflict = eventType === '합주' && res.event_type === '합주';
+
+                if (isConflict) {
+                    if (!occupied[res.date]) occupied[res.date] = [];
+                    occupied[res.date].push(res.start_time);
+                }
+            });
+
+            setOccupiedSlots(occupied);
+        };
+
+        fetchReservations();
+    }, [dates, eventType]);
 
     const toggleSlot = (date: string, time: string) => {
+        // Prevent toggling if occupied
+        if (occupiedSlots[date]?.includes(time)) return;
+
         const currentSlots = selectedSlots[date] || [];
         const isSelected = currentSlots.includes(time);
 
@@ -38,6 +89,8 @@ export default function StepTimeGrid({ dates, selectedSlots, onChange, onNext }:
     };
 
     const handleMouseDown = (date: string, time: string) => {
+        if (occupiedSlots[date]?.includes(time)) return;
+
         setIsDragging(true);
         const isSelected = (selectedSlots[date] || []).includes(time);
         setDragMode(isSelected ? 'deselect' : 'select');
@@ -46,6 +99,7 @@ export default function StepTimeGrid({ dates, selectedSlots, onChange, onNext }:
 
     const handleMouseEnter = (date: string, time: string) => {
         if (!isDragging) return;
+        if (occupiedSlots[date]?.includes(time)) return;
 
         const currentSlots = selectedSlots[date] || [];
         const isSelected = currentSlots.includes(time);
@@ -72,7 +126,10 @@ export default function StepTimeGrid({ dates, selectedSlots, onChange, onNext }:
         <div className="space-y-8 animate-fade-in-up select-none">
             <div className="text-center space-y-2">
                 <h2 className="text-xl font-bold text-gray-900">시간을 선택해주세요</h2>
-                <p className="text-gray-500 text-sm">드래그하여 가능한 시간을 모두 선택해주세요</p>
+                <p className="text-gray-500 text-sm">
+                    <span className="inline-block w-3 h-3 bg-gray-200 rounded-sm mr-1 align-middle"></span>
+                    이미 예약된 시간은 선택할 수 없습니다
+                </p>
             </div>
 
             {/* Time Grid */}
@@ -99,17 +156,23 @@ export default function StepTimeGrid({ dates, selectedSlots, onChange, onNext }:
 
                             {TIME_SLOTS.map(time => {
                                 const isSelected = (selectedSlots[date] || []).includes(time);
+                                const isOccupied = occupiedSlots[date]?.includes(time);
+
                                 return (
                                     <div
                                         key={`${date}-${time}`}
                                         onMouseDown={() => handleMouseDown(date, time)}
                                         onMouseEnter={() => handleMouseEnter(date, time)}
                                         className={`
-                      h-8 rounded-md cursor-pointer transition-colors border border-gray-100
-                      ${isSelected
-                                                ? 'bg-blue-500 border-blue-600 shadow-sm'
-                                                : 'bg-gray-50 hover:bg-gray-100'}
+                      h-8 rounded-md transition-colors border border-gray-100
+                      ${isOccupied
+                                                ? 'bg-gray-200 cursor-not-allowed opacity-50' // Occupied style
+                                                : isSelected
+                                                    ? 'bg-blue-500 border-blue-600 shadow-sm cursor-pointer'
+                                                    : 'bg-gray-50 hover:bg-gray-100 cursor-pointer'
+                                            }
                     `}
+                                        title={isOccupied ? '이미 예약됨' : ''}
                                     />
                                 );
                             })}

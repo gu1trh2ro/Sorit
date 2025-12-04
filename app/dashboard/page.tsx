@@ -3,6 +3,9 @@ import Footer from '@/components/Footer';
 import { rooms, todaySlots } from '@/data/mockData';
 import RoomSearch from '@/components/features/RoomSearch';
 import DashboardCharts from '@/components/features/DashboardCharts';
+import ReservationCalendar from '@/components/features/ReservationCalendar';
+import Link from 'next/link';
+import Button from '@/components/Button';
 import { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -41,6 +44,15 @@ export default function Dashboard() {
                         <h3 className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">Operating Hours</h3>
                         <p className="text-3xl font-bold text-black">10:00 - 24:00</p>
                     </div>
+                </section>
+
+                {/* Reservation Calendar Section */}
+                <section className="mb-12">
+                    <h2 className="text-2xl font-bold text-black mb-6 flex items-center gap-2">
+                        <span className="w-2 h-8 bg-blue-500 rounded-full"></span>
+                        Reservation Calendar
+                    </h2>
+                    <ReservationCalendar />
                 </section>
 
                 {/* Charts Section */}

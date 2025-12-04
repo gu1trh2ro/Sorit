@@ -38,6 +38,17 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
     const [confirmDate, setConfirmDate] = useState('');
     const [confirmTime, setConfirmTime] = useState('');
 
+    // Helper to generate 30-minute intervals
+    const generateTimeOptions = () => {
+        const times = [];
+        for (let i = 0; i < 24; i++) {
+            const hour = i.toString().padStart(2, '0');
+            times.push(`${hour}:00`);
+            times.push(`${hour}:30`);
+        }
+        return times;
+    };
+
     useEffect(() => {
         const fetchData = async () => {
             if (!id) return;
@@ -104,15 +115,50 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
         }
     };
 
+    const [confirmEndTime, setConfirmEndTime] = useState('');
+
+    const checkConflict = async (date: string, start: string, end: string) => {
+        // Only check conflicts if the new event is '합주' (Band Practice)
+        // User Rule: '합주' vs '합주' is NOT allowed. '합주' vs '개인연습' IS allowed.
+        if (poll?.event_type !== '합주') return false;
+
+        const { data, error } = await supabase
+            .from('reservations')
+            .select('id')
+            .eq('date', date)
+            .eq('room_id', 1) // Default room
+            .eq('event_type', '합주') // Only check against other Band Practices
+            .neq('status', 'cancelled')
+            .or(`and(start_time.lte.${start},end_time.gt.${start}),and(start_time.lt.${end},end_time.gte.${end}),and(start_time.gte.${start},end_time.lte.${end})`);
+
+        if (error) {
+            console.error('Error checking conflicts:', error);
+            throw error;
+        }
+
+        return data.length > 0;
+    };
+
     const handleConfirmReservation = async () => {
-        if (!confirmDate || !confirmTime) {
-            alert('확정할 날짜와 시간을 입력해주세요.');
+        if (!confirmDate || !confirmTime || !confirmEndTime) {
+            alert('확정할 날짜와 시작/종료 시간을 모두 입력해주세요.');
+            return;
+        }
+        if (confirmTime >= confirmEndTime) {
+            alert('종료 시간은 시작 시간보다 늦어야 합니다.');
             return;
         }
         if (!poll) return;
 
         try {
-            // 1. Create Reservation
+            // 1. Check for conflicts
+            const hasConflict = await checkConflict(confirmDate, confirmTime, confirmEndTime);
+            if (hasConflict) {
+                alert('해당 시간에 이미 다른 예약이 존재합니다! 다른 시간을 선택해주세요.');
+                return;
+            }
+
+            // 2. Create Reservation
             const { error: reservationError } = await supabase
                 .from('reservations')
                 .insert({
@@ -120,13 +166,14 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
                     user_name: poll.title, // Use poll title as reservation name
                     date: confirmDate,
                     start_time: confirmTime,
-                    end_time: confirmTime, // TODO: Add duration logic if needed
+                    end_time: confirmEndTime,
+                    event_type: poll.event_type, // Save event type from poll
                     status: 'confirmed'
                 });
 
             if (reservationError) throw reservationError;
 
-            // 2. Close Poll (Optional)
+            // 3. Close Poll (Optional)
             await supabase
                 .from('scheduling_polls')
                 .update({ is_closed: true })
@@ -217,7 +264,7 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
                             <h2 className="text-xl font-bold text-gray-900 mb-2">최종 시간 확정</h2>
                             <p className="text-sm text-gray-500 mb-6">모든 멤버의 투표가 끝나면 최종 시간을 확정해주세요.</p>
 
-                            <div className="grid grid-cols-2 gap-4 mb-4">
+                            <div className="grid grid-cols-3 gap-4 mb-4">
                                 <div>
                                     <label className="block text-xs font-bold text-gray-500 mb-1">날짜 (YYYY-MM-DD)</label>
                                     <input
@@ -228,13 +275,30 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-bold text-gray-500 mb-1">시간 (HH:MM)</label>
-                                    <input
-                                        type="time"
+                                    <label className="block text-xs font-bold text-gray-500 mb-1">시작 시간</label>
+                                    <select
                                         value={confirmTime}
                                         onChange={(e) => setConfirmTime(e.target.value)}
-                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 outline-none"
-                                    />
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 outline-none appearance-none bg-white"
+                                    >
+                                        <option value="">선택</option>
+                                        {generateTimeOptions().map(time => (
+                                            <option key={time} value={time}>{time}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1">종료 시간</label>
+                                    <select
+                                        value={confirmEndTime}
+                                        onChange={(e) => setConfirmEndTime(e.target.value)}
+                                        className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:border-blue-500 outline-none appearance-none bg-white"
+                                    >
+                                        <option value="">선택</option>
+                                        {generateTimeOptions().map(time => (
+                                            <option key={time} value={time}>{time}</option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
 

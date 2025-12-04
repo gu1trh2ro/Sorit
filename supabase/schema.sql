@@ -32,6 +32,7 @@ create table reservations (
   date date not null, -- 예약 날짜
   start_time time not null, -- 시작 시간
   end_time time not null, -- 종료 시간
+  event_type text, -- 예약 목적 (합주, 개인연습, 휴식 등)
   status text default 'confirmed' -- 예약 상태
 );
 

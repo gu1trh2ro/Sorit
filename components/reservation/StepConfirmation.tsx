@@ -49,6 +49,12 @@ export default function StepConfirmation({ state }: StepConfirmationProps) {
 
             // 3. Generate Share URL
             const url = `${window.location.origin}/reservation/${poll.id}`;
+
+            // [NEW] If single person, create reservation immediately
+            if (state.eventInfo.headcount === 1) {
+                await createSinglePersonReservation(poll.id);
+            }
+
             setPollId(poll.id);
             setShareUrl(url);
 
@@ -58,6 +64,72 @@ export default function StepConfirmation({ state }: StepConfirmationProps) {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    // Helper to create reservation for single person
+    const createSinglePersonReservation = async (pollId: string) => {
+        const reservationsToInsert = [];
+
+        // Iterate over selected slots to create reservation records
+        // Assuming selectedSlots is { "2024-12-05": ["13:00", "13:30", ...] }
+        for (const [date, times] of Object.entries(state.selectedSlots)) {
+            if (times.length === 0) continue;
+
+            // Simple logic: Create one reservation per continuous block or just one per slot?
+            // The current schema seems to support start_time/end_time.
+            // For simplicity in this MVP, let's create one record per 30min slot OR 
+            // try to merge them. Let's just create one record per slot for now to be safe and simple,
+            // or better: just pick the first and last time if they are continuous?
+            // Let's stick to the simplest: One reservation entry per selected time slot is probably bad for the DB.
+            // Let's try to group them.
+
+            // Grouping logic:
+            const sortedTimes = [...times].sort();
+            // For now, let's just insert them as individual 30min blocks if the DB allows, 
+            // OR just insert one big block if they are continuous.
+            // Given the user said "13:00 to 18:00", that's a lot of slots.
+            // Let's just insert one record for the whole range for simplicity of the "Dashboard" view.
+
+            if (sortedTimes.length > 0) {
+                const startTime = sortedTimes[0];
+                // Calculate end time: last slot + 30 mins
+                // This is a bit complex to do perfectly without date-fns here, but let's approximate.
+                // Actually, let's just insert each slot as a separate row for now to ensure "Heatmap" logic works if it uses rows.
+                // Wait, ReservationCalendar uses "start_time" and "end_time".
+                // If I insert 10 rows, the calendar will show 10 items. That's annoying.
+                // Let's try to just take the min and max.
+
+                const endTimeSlot = sortedTimes[sortedTimes.length - 1];
+                // Add 30 mins to end time string (e.g. "13:00" -> "13:30")
+                const [h, m] = endTimeSlot.split(':').map(Number);
+                const endDateObj = new Date();
+                endDateObj.setHours(h, m + 30);
+                const endTime = `${endDateObj.getHours().toString().padStart(2, '0')}:${endDateObj.getMinutes().toString().padStart(2, '0')}`;
+
+                reservationsToInsert.push({
+                    room_id: 1, // Default room
+                    user_name: state.eventInfo.title, // Use event title as user name
+                    date: date,
+                    start_time: startTime,
+                    end_time: endTime,
+                    event_type: state.eventInfo.type, // Save event type
+                    status: 'confirmed',
+                    poll_id: pollId // Link back to poll if needed (schema might not have this, let's check)
+                });
+            }
+        }
+
+        // Check if schema has poll_id in reservations? 
+        // The schema file I viewed might have it or not. 
+        // Let's assume NOT for now based on standard fields, but I should check.
+        // Actually, I'll just omit poll_id from reservation insert to be safe, or check schema.
+        // The user didn't ask for linking.
+
+        const { error } = await supabase
+            .from('reservations')
+            .insert(reservationsToInsert.map(({ poll_id, ...rest }) => rest));
+
+        if (error) throw error;
     };
 
     const copyToClipboard = () => {

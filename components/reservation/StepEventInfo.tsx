@@ -20,7 +20,7 @@ export default function StepEventInfo({ info, onChange, onNext }: StepEventInfoP
         if (type === '개인연습' || type === '휴식') {
             onChange({
                 type,
-                title: type, // Title becomes the type name
+                title: '', // Clear title so user can enter name
                 headcount: 1 // Headcount fixed to 1
             });
         } else {
@@ -54,22 +54,24 @@ export default function StepEventInfo({ info, onChange, onNext }: StepEventInfoP
                 </div>
             </div>
 
-            {/* Inputs (Hidden for simple types) */}
-            {!isSimpleType && (
-                <div className="space-y-8 animate-fade-in-up">
-                    {/* Event Title Input */}
-                    <div className="space-y-3">
-                        <label className="block text-sm font-bold text-gray-700">약속 이름을 알려주세요</label>
-                        <input
-                            type="text"
-                            value={info.title}
-                            onChange={(e) => onChange({ title: e.target.value })}
-                            placeholder="예: 프리텐더 합주"
-                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-lg font-medium text-gray-900 placeholder-gray-400"
-                        />
-                    </div>
+            {/* Inputs */}
+            <div className="space-y-8 animate-fade-in-up">
+                {/* Event Title Input */}
+                <div className="space-y-3">
+                    <label className="block text-sm font-bold text-gray-700">
+                        {isSimpleType ? '예약자 이름을 알려주세요' : '약속 이름을 알려주세요'}
+                    </label>
+                    <input
+                        type="text"
+                        value={info.title}
+                        onChange={(e) => onChange({ title: e.target.value })}
+                        placeholder={isSimpleType ? "예: 홍길동" : "예: 프리텐더 합주"}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-lg font-medium text-gray-900 placeholder-gray-400"
+                    />
+                </div>
 
-                    {/* Headcount Input */}
+                {/* Headcount Input (Only show for band practice) */}
+                {!isSimpleType && (
                     <div className="space-y-3">
                         <label className="block text-sm font-bold text-gray-700">약속 참여 인원을 알려주세요</label>
                         <div className="flex items-center gap-4">
@@ -90,8 +92,8 @@ export default function StepEventInfo({ info, onChange, onNext }: StepEventInfoP
                             </button>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
 
             {/* Next Button */}
             <div className="pt-4">

@@ -94,6 +94,7 @@ export default function ReservationPage() {
                                     selectedSlots={state.selectedSlots}
                                     onChange={updateSlots}
                                     onNext={nextStep}
+                                    eventType={state.eventInfo.type}
                                 />
                             )}
                             {state.step === 4 && (
