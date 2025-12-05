@@ -1,4 +1,3 @@
-import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import { Metadata } from 'next';
 
@@ -10,8 +9,6 @@ export const metadata: Metadata = {
 export default function About() {
     return (
         <div className="min-h-screen bg-gray-50 text-gray-900">
-            <NavBar />
-
             <main className="pt-32 pb-12 px-8 max-w-4xl mx-auto">
                 <h1 className="text-5xl font-black mb-8 text-black tracking-tighter">
                     ABOUT SORIT
@@ -19,9 +16,8 @@ export default function About() {
 
                 <section className="mb-12 bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
                     <h2 className="text-2xl font-bold text-black mb-4 flex items-center gap-2">
-                        <span className="w-1.5 h-8 bg-blue-500 rounded-full"></span>
                         Project Overview
-                    </h2>
+                    </h2 >
                     <p className="text-gray-600 leading-relaxed mb-4">
                         Sorit is a smart reservation system designed for the Pusan National University Band.
                         We aim to solve the inefficiency of traditional booking methods by providing real-time availability and instant reservations.
@@ -29,7 +25,7 @@ export default function About() {
                     <p className="text-gray-600 leading-relaxed">
                         Built with Next.js App Router and Tailwind CSS, focusing on a clean, modern, and vibrant user experience.
                     </p>
-                </section>
+                </section >
 
                 <section className="mb-12 bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
                     <h2 className="text-2xl font-bold text-black mb-4 flex items-center gap-2">
@@ -54,9 +50,9 @@ export default function About() {
                         <p className="text-gray-500">Dept. of CSE, Pusan National University</p>
                     </div>
                 </section>
-            </main>
+            </main >
 
             <Footer />
-        </div>
+        </div >
     );
 }

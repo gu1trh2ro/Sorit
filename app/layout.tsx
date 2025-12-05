@@ -17,6 +17,10 @@ export const metadata: Metadata = {
   description: "부산대학교 밴드부 합주실 스마트 예약 시스템. 팀별 가능 시간 기반으로 빈 합주실을 한눈에 확인하고 예약하세요.",
 };
 
+import NavBar from "@/components/NavBar";
+
+// ... imports
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -27,6 +31,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <NavBar />
         {children}
       </body>
     </html>

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 
 // Step Components
@@ -97,8 +96,6 @@ function ReservationContent() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
-            <NavBar />
-
             <main className="flex-grow pt-32 pb-20 px-4">
                 <div className="max-w-2xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
                     {/* Progress Bar */}

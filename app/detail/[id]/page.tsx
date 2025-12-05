@@ -1,4 +1,3 @@
-import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import { rooms } from '@/data/mockData';
 import { notFound } from 'next/navigation';
@@ -34,8 +33,6 @@ export default async function RoomDetail({ params }: Props) {
 
     return (
         <div className="min-h-screen bg-gray-50 text-gray-900">
-            <NavBar />
-
             <main className="pt-32 pb-12 px-8 max-w-4xl mx-auto">
                 <div className="mb-8">
                     <h1 className="text-5xl font-black text-black mb-2 tracking-tighter">
@@ -88,9 +85,9 @@ export default async function RoomDetail({ params }: Props) {
                         &larr; Back to Dashboard
                     </a>
                 </div>
-            </main>
+            </main >
 
             <Footer />
-        </div>
+        </div >
     );
 }

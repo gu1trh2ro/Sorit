@@ -1,13 +1,14 @@
+
 'use client';
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import NavBar from '@/components/NavBar';
 import Footer from '@/components/Footer';
 import Button from '@/components/Button';
-import { supabase } from '@/lib/supabase';
-
+import { createClient } from '@/utils/supabase/client';
 import VotingTimeGrid from '@/components/reservation/VotingTimeGrid';
+
+const supabase = createClient();
 
 type PollData = {
     id: string;
@@ -54,6 +55,13 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
             if (!id) return;
 
             try {
+                // 0. Fetch User Session
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    const userName = user.user_metadata.full_name || user.email?.split('@')[0];
+                    if (userName) setMyName(userName);
+                }
+
                 // 1. Fetch Poll Info
                 const { data: pollData, error: pollError } = await supabase
                     .from('scheduling_polls')
@@ -200,8 +208,6 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
-            <NavBar />
-
             <main className="flex-grow pt-32 pb-20 px-4">
                 <div className="max-w-4xl mx-auto bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100">
 

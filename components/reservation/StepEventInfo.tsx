@@ -1,6 +1,8 @@
 'use client';
 
 import Button from '@/components/Button';
+import { createClient } from '@/utils/supabase/client';
+import { useEffect, useState } from 'react';
 
 interface StepEventInfoProps {
     info: {
@@ -15,18 +17,39 @@ interface StepEventInfoProps {
 const EVENT_TYPES = ['합주', '개인연습', '휴식'];
 
 export default function StepEventInfo({ info, onChange, onNext }: StepEventInfoProps) {
+    const [user, setUser] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const supabase = createClient();
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+        };
+        fetchUser();
+    }, []);
+
     // Auto-fill for simple types
     const handleTypeChange = (type: string) => {
         if (type === '개인연습' || type === '휴식') {
+            const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || '';
             onChange({
                 type,
-                title: '', // Clear title so user can enter name
+                title: userName, // Auto-fill with user name if available
                 headcount: 1 // Headcount fixed to 1
             });
         } else {
             onChange({ type, title: '', headcount: 4 }); // Reset for band practice
         }
     };
+
+    // Effect to auto-fill title when type changes or user loads (if simple type and title is empty)
+    useEffect(() => {
+        const isSimple = info.type === '개인연습' || info.type === '휴식';
+        if (user && isSimple && !info.title) {
+            const userName = user.user_metadata.full_name || user.email?.split('@')[0];
+            if (userName) onChange({ title: userName });
+        }
+    }, [user, info.type, info.title, onChange]);
 
     const isSimpleType = info.type === '개인연습' || info.type === '휴식';
     const isValid = info.title.trim().length > 0 && info.headcount > 0;
@@ -59,15 +82,26 @@ export default function StepEventInfo({ info, onChange, onNext }: StepEventInfoP
                 {/* Event Title Input */}
                 <div className="space-y-3">
                     <label className="block text-sm font-bold text-gray-700">
-                        {isSimpleType ? '예약자 이름을 알려주세요' : '약속 이름을 알려주세요'}
+                        {isSimpleType ? '예약자 이름' : '약속 이름을 알려주세요'}
                     </label>
-                    <input
-                        type="text"
-                        value={info.title}
-                        onChange={(e) => onChange({ title: e.target.value })}
-                        placeholder={isSimpleType ? "예: 홍길동" : "예: 프리텐더 합주"}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-lg font-medium text-gray-900 placeholder-gray-400"
-                    />
+
+                    {isSimpleType && user ? (
+                        <div className="w-full px-4 py-3 rounded-xl border-2 border-blue-100 bg-blue-50 text-blue-900 flex items-center gap-3">
+                            {user.user_metadata.avatar_url && (
+                                <img src={user.user_metadata.avatar_url} alt="Profile" className="w-8 h-8 rounded-full" />
+                            )}
+                            <span className="font-bold text-lg">{info.title || user.user_metadata.full_name}</span>
+                            <span className="text-xs text-blue-500 bg-white px-2 py-1 rounded-full ml-auto">Google Login</span>
+                        </div>
+                    ) : (
+                        <input
+                            type="text"
+                            value={info.title}
+                            onChange={(e) => onChange({ title: e.target.value })}
+                            placeholder={isSimpleType ? "예: 홍길동" : "예: 프리텐더 합주"}
+                            className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all text-lg font-medium text-gray-900 placeholder-gray-400"
+                        />
+                    )}
                 </div>
 
                 {/* Headcount Input (Only show for band practice) */}

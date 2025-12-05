@@ -51,20 +51,21 @@ export default function Hero() {
 
       <div className="relative z-20 text-center px-4 max-w-5xl mx-auto">
         {/* Main Title */}
-        <h1 className="text-[100px] md:text-[150px] font-black leading-none tracking-tighter text-white drop-shadow-2xl mb-6 animate-fade-in-up mix-blend-overlay">
+        {/* Main Title */}
+        <h1 className="text-6xl md:text-[150px] font-black leading-none tracking-tighter text-white drop-shadow-2xl mb-6 animate-fade-in-up mix-blend-overlay">
           SORIT
         </h1>
 
-        <p className="text-2xl md:text-3xl text-white/90 font-light tracking-wide mb-12 max-w-2xl mx-auto drop-shadow-md">
+        <p className="text-lg md:text-3xl text-white/90 font-light tracking-wide mb-12 max-w-2xl mx-auto drop-shadow-md px-4">
           The Perfect Space for Your <span className="font-bold text-white">Masterpiece</span>
         </p>
 
         {/* CTA Buttons */}
-        <div className="flex gap-6 justify-center">
-          <Link href="/reservation">
+        <div className="flex flex-col md:flex-row gap-4 md:gap-6 justify-center items-center">
+          <Link href="/reservation" className="w-full md:w-auto">
             <Button
               variant="primary"
-              className="shadow-xl hover:shadow-2xl hover:scale-105 border-none bg-white text-black hover:bg-gray-100"
+              className="w-full md:w-auto shadow-xl hover:shadow-2xl hover:scale-105 border-none bg-white text-black hover:bg-gray-100"
             >
               BOOK NOW
             </Button>
@@ -72,7 +73,7 @@ export default function Hero() {
           <Button
             variant="outline"
             onClick={() => alert('팀 설정 페이지로 이동')}
-            className="border-2 border-white text-white bg-transparent hover:bg-white/20 hover:text-white hover:border-white backdrop-blur-sm"
+            className="w-full md:w-auto border-2 border-white text-white bg-transparent hover:bg-white/20 hover:text-white hover:border-white backdrop-blur-sm"
           >
             MANAGE TEAM
           </Button>
