@@ -16,7 +16,11 @@ type Reservation = {
     status: string;
 };
 
-export default function ReservationCalendar() {
+interface Props {
+    roomId?: string;
+}
+
+export default function ReservationCalendar({ roomId }: Props) {
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date>(new Date());
     const [reservations, setReservations] = useState<Reservation[]>([]);
@@ -39,12 +43,18 @@ export default function ReservationCalendar() {
             const startStr = format(startDate, 'yyyy-MM-dd');
             const endStr = format(endDate, 'yyyy-MM-dd');
 
-            const { data, error } = await supabase
+            let query = supabase
                 .from('reservations')
                 .select('*')
                 .gte('date', startStr)
                 .lte('date', endStr)
                 .eq('status', 'confirmed');
+
+            if (roomId) {
+                query = query.eq('room_id', roomId);
+            }
+
+            const { data, error } = await query;
 
             if (error) {
                 console.error('Error fetching reservations:', error);
@@ -55,7 +65,7 @@ export default function ReservationCalendar() {
         };
 
         fetchReservations();
-    }, [currentMonth]);
+    }, [currentMonth, roomId]);
 
     // Filter reservations for the selected date
     const selectedDateReservations = reservations.filter(res =>

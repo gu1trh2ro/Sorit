@@ -28,13 +28,13 @@ export default function DashboardCharts({ rooms, todaySlots }: Props) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
             {/* Capacity Chart */}
             <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
-                <h3 className="text-xl font-bold text-black mb-6">Studio Capacity</h3>
+                <h3 className="text-xl font-bold text-black mb-6">합주실 수용 인원</h3>
                 <div className="space-y-6">
                     {rooms.map(room => (
                         <div key={room.id}>
                             <div className="flex justify-between text-sm text-gray-500 mb-2 font-medium">
                                 <span>{room.name}</span>
-                                <span>{room.capacity} People</span>
+                                <span>{room.capacity}명</span>
                             </div>
                             <div className="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
                                 <div
@@ -49,13 +49,13 @@ export default function DashboardCharts({ rooms, todaySlots }: Props) {
 
             {/* Availability Chart */}
             <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
-                <h3 className="text-xl font-bold text-black mb-6">Today's Status</h3>
+                <h3 className="text-xl font-bold text-black mb-6">오늘의 예약 현황</h3>
                 <div className="space-y-6">
                     {availabilityByRoom.map((item, index) => (
                         <div key={index}>
                             <div className="flex justify-between text-sm text-gray-500 mb-2 font-medium">
                                 <span>{item.name}</span>
-                                <span>{item.available} / {item.total} Slots</span>
+                                <span>{item.available} / {item.total} 타임</span>
                             </div>
                             <div className="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
                                 <div
@@ -68,13 +68,13 @@ export default function DashboardCharts({ rooms, todaySlots }: Props) {
                 </div>
                 <div className="mt-6 flex gap-6 text-xs text-gray-500 justify-end font-medium">
                     <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 bg-green-500 rounded-full"></span> Good
+                        <span className="w-3 h-3 bg-green-500 rounded-full"></span> 여유
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 bg-yellow-400 rounded-full"></span> Moderate
+                        <span className="w-3 h-3 bg-yellow-400 rounded-full"></span> 보통
                     </div>
                     <div className="flex items-center gap-2">
-                        <span className="w-3 h-3 bg-red-500 rounded-full"></span> Busy
+                        <span className="w-3 h-3 bg-red-500 rounded-full"></span> 혼잡
                     </div>
                 </div>
             </div>

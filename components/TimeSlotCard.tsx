@@ -44,11 +44,11 @@ export default function TimeSlotCard({ slot }: TimeSlotCardProps) {
       <div className="mb-4">
         {slot.available ? (
           <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded-full">
-            <span className="w-2 h-2 rounded-full bg-green-500"></span> Available
+            <span className="w-2 h-2 rounded-full bg-green-500"></span> 예약 가능
           </span>
         ) : (
           <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-500 text-xs font-bold px-3 py-1 rounded-full">
-            <span className="w-2 h-2 rounded-full bg-gray-400"></span> Booked ({slot.teamName})
+            <span className="w-2 h-2 rounded-full bg-gray-400"></span> 예약됨 ({slot.teamName})
           </span>
         )}
       </div>
@@ -60,7 +60,7 @@ export default function TimeSlotCard({ slot }: TimeSlotCardProps) {
         disabled={!slot.available}
         className="w-full"
       >
-        {slot.available ? 'Book Now' : 'Unavailable'}
+        {slot.available ? '예약하기' : '예약 불가'}
       </Button>
     </div>
   );

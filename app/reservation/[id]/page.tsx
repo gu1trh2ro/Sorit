@@ -265,7 +265,85 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
 
                         <hr className="border-gray-100" />
 
-                        {/* Section 2: Confirm (Manager Only) */}
+                        {/* Section 2: Recommendations (Best Time Slots) */}
+                        <section className="bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                            <h2 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                <span className="text-2xl">💡</span> 추천 시간
+                            </h2>
+                            <p className="text-sm text-gray-500 mb-6">가장 많은 멤버가 참여할 수 있는 시간을 추천해드려요.</p>
+
+                            <div className="space-y-3">
+                                {(() => {
+                                    // Calculate best slots logic
+                                    const allSlots: { date: string; time: string; count: number }[] = [];
+                                    poll.dates.forEach(date => {
+                                        const timeOptions = generateTimeOptions(); // 00:00 ~ 23:30
+                                        timeOptions.forEach(time => {
+                                            // Calculate vote count for this specific slot
+                                            const count = existingVotes.reduce((acc, vote) => {
+                                                const slots = vote.selected_slots[date] || [];
+                                                return slots.includes(time) ? acc + 1 : acc;
+                                            }, 0);
+                                            if (count > 0) {
+                                                allSlots.push({ date, time, count });
+                                            }
+                                        });
+                                    });
+
+                                    // Sort by count (desc) -> date (asc) -> time (asc)
+                                    const bestSlots = allSlots.sort((a, b) => {
+                                        if (b.count !== a.count) return b.count - a.count;
+                                        if (a.date !== b.date) return a.date.localeCompare(b.date);
+                                        return a.time.localeCompare(b.time);
+                                    }).slice(0, 3); // Top 3
+
+                                    if (bestSlots.length === 0) {
+                                        return <p className="text-sm text-gray-400 italic">아직 투표된 시간이 없습니다.</p>;
+                                    }
+
+                                    return bestSlots.map((slot, idx) => (
+                                        <div
+                                            key={`${slot.date}-${slot.time}`}
+                                            className="flex items-center justify-between bg-white p-4 rounded-xl border border-blue-100 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group"
+                                            onClick={() => {
+                                                setConfirmDate(slot.date);
+                                                setConfirmTime(slot.time);
+                                                // Auto-set end time to +1 hour for convenience
+                                                const [h, m] = slot.time.split(':').map(Number);
+                                                const endDate = new Date();
+                                                endDate.setHours(h + 1, m);
+                                                const endTimeStr = `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
+                                                setConfirmEndTime(endTimeStr);
+                                            }}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${idx === 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-500'}`}>
+                                                    {idx + 1}
+                                                </div>
+                                                <div>
+                                                    <div className="font-bold text-gray-900">
+                                                        {slot.date} <span className="text-blue-600 ml-1">{slot.time}</span>
+                                                    </div>
+                                                    <div className="text-xs text-gray-500">
+                                                        {new Date(slot.date).toLocaleDateString('ko-KR', { weekday: 'long' })}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md">
+                                                    {slot.count}명 가능
+                                                </span>
+                                                <span className="text-gray-300 group-hover:text-blue-500 transition-colors">
+                                                    선택 &rarr;
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ));
+                                })()}
+                            </div>
+                        </section>
+
+                        {/* Section 3: Confirm (Manager Only) */}
                         <section className="bg-gray-50 p-6 rounded-2xl border border-gray-200">
                             <h2 className="text-xl font-bold text-gray-900 mb-2">최종 시간 확정</h2>
                             <p className="text-sm text-gray-500 mb-6">모든 멤버의 투표가 끝나면 최종 시간을 확정해주세요.</p>

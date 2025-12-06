@@ -1,3 +1,4 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
 @import "tailwindcss";
 
 :root {
@@ -6,12 +7,14 @@
   --bg-primary: #ffffff;
   --bg-secondary: #f8f9fa;
   --bg-card: #ffffff;
-  
-  --neon-cyan: #00bcd4; /* Slightly darker cyan for light bg */
-  --neon-magenta: #e91e63; /* Slightly darker pink */
+
+  --neon-cyan: #00bcd4;
+  /* Slightly darker cyan for light bg */
+  --neon-magenta: #e91e63;
+  /* Slightly darker pink */
   --neon-purple: #9c27b0;
   --neon-green: #4caf50;
-  
+
   --text-primary: #1a1a1a;
   --text-secondary: #666666;
   --text-disabled: #a0a0a0;
@@ -20,35 +23,35 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: "Pretendard", var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-family: "Pretendard", var(--font-sans), Arial, Helvetica, sans-serif;
 }
 
 
 .glow-cyan {
   box-shadow: 0 0 20px rgba(0, 245, 255, 0.4),
-              0 0 40px rgba(0, 245, 255, 0.2);
+    0 0 40px rgba(0, 245, 255, 0.2);
 }
 
 .glow-cyan-strong {
   box-shadow: 0 0 30px rgba(0, 245, 255, 0.6),
-              0 0 60px rgba(0, 245, 255, 0.3);
+    0 0 60px rgba(0, 245, 255, 0.3);
 }
 
 .glow-magenta {
   box-shadow: 0 0 20px rgba(255, 0, 110, 0.4),
-              0 0 40px rgba(255, 0, 110, 0.2);
+    0 0 40px rgba(255, 0, 110, 0.2);
 }
 
 .glow-purple {
   box-shadow: 0 0 20px rgba(139, 92, 246, 0.4),
-              0 0 40px rgba(139, 92, 246, 0.2);
+    0 0 40px rgba(139, 92, 246, 0.2);
 }
 
 

@@ -2,6 +2,8 @@ import Footer from '@/components/Footer';
 import { rooms } from '@/data/mockData';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
+import ReservationCalendar from '@/components/features/ReservationCalendar';
+import Link from 'next/link';
 
 interface Props {
     params: Promise<{ id: string }>;
@@ -47,15 +49,15 @@ export default async function RoomDetail({ params }: Props) {
                     <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
                         <h2 className="text-2xl font-bold text-black mb-6 flex items-center gap-2">
                             <span className="w-1.5 h-6 bg-blue-500 rounded-full"></span>
-                            Basic Info
+                            기본 정보
                         </h2>
                         <ul className="space-y-4 text-gray-600">
                             <li className="flex justify-between border-b border-gray-100 pb-2">
-                                <span className="text-gray-400 font-medium">Capacity</span>
-                                <span className="font-bold text-black">{room.capacity} People</span>
+                                <span className="text-gray-400 font-medium">수용 인원</span>
+                                <span className="font-bold text-black">{room.capacity}명</span>
                             </li>
                             <li className="flex justify-between border-b border-gray-100 pb-2">
-                                <span className="text-gray-400 font-medium">Hours</span>
+                                <span className="text-gray-400 font-medium">운영 시간</span>
                                 <span className="font-bold text-black">{room.openAt} - {room.closeAt}</span>
                             </li>
                         </ul>
@@ -64,7 +66,7 @@ export default async function RoomDetail({ params }: Props) {
                     <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
                         <h2 className="text-2xl font-bold text-black mb-6 flex items-center gap-2">
                             <span className="w-1.5 h-6 bg-purple-500 rounded-full"></span>
-                            Equipment
+                            장비 목록
                         </h2>
                         <ul className="space-y-3">
                             {room.equipment.map((item, index) => (
@@ -77,13 +79,28 @@ export default async function RoomDetail({ params }: Props) {
                     </div>
                 </div>
 
-                <div className="text-center">
-                    <a
+                {/* Reservation Calendar Section */}
+                <section className="mb-12">
+                    <h2 className="text-2xl font-bold text-black mb-6 flex items-center gap-2">
+                        <span className="w-1.5 h-6 bg-green-500 rounded-full"></span>
+                        예약 현황
+                    </h2>
+                    <ReservationCalendar roomId={room.id} />
+                </section>
+
+                <div className="flex justify-center gap-4">
+                    <Link
                         href="/dashboard"
-                        className="inline-block px-8 py-3 bg-white border-2 border-blue-500 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-bold shadow-sm hover:shadow-md"
+                        className="px-8 py-3 bg-white border-2 border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 transition-colors font-bold"
                     >
-                        &larr; Back to Dashboard
-                    </a>
+                        대시보드로 돌아가기
+                    </Link>
+                    <Link
+                        href={`/reservation?roomName=${encodeURIComponent(room.name)}`}
+                        className="px-8 py-3 bg-black text-white border-2 border-black rounded-lg hover:bg-gray-800 transition-colors font-bold shadow-lg hover:shadow-xl hover:-translate-y-1"
+                    >
+                        지금 예약하기
+                    </Link>
                 </div>
             </main >
 

@@ -75,21 +75,21 @@ export default async function Dashboard() {
             <main className="pt-32 pb-12 px-8 max-w-7xl mx-auto">
                 <div className="mb-12">
                     <h1 className="text-5xl font-black mb-4 text-black tracking-tighter">
-                        DASHBOARD
+                        대시보드
                     </h1>
-                    <p className="text-gray-500">Real-time studio status and analytics</p>
+                    <p className="text-gray-500">실시간 합주실 현황 및 통계</p>
                 </div>
                 <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                     <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
-                        <h3 className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">Total Studios</h3>
-                        <p className="text-5xl font-black text-black">{totalRooms}</p>
+                        <h3 className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">전체 합주실</h3>
+                        <p className="text-5xl font-black text-black">{totalRooms}개</p>
                     </div>
                     <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
-                        <h3 className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">Available Slots (Today)</h3>
-                        <p className="text-5xl font-black text-blue-600">{availableSlots} <span className="text-2xl text-gray-300 font-light">/ {totalSlots}</span></p>
+                        <h3 className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">오늘 예약 가능</h3>
+                        <p className="text-5xl font-black text-blue-600">{availableSlots} <span className="text-2xl text-gray-300 font-light">/ {totalSlots} 타임</span></p>
                     </div>
                     <div className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
-                        <h3 className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">Operating Hours</h3>
+                        <h3 className="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2">운영 시간</h3>
                         <p className="text-3xl font-bold text-black">10:00 - 24:00</p>
                     </div>
                 </section>
@@ -98,7 +98,7 @@ export default async function Dashboard() {
                 <section className="mb-12">
                     <h2 className="text-2xl font-bold text-black mb-6 flex items-center gap-2">
                         <span className="w-2 h-8 bg-blue-500 rounded-full"></span>
-                        Reservation Calendar
+                        예약 캘린더
                     </h2>
                     <ReservationCalendar />
                 </section>
@@ -110,7 +110,7 @@ export default async function Dashboard() {
                 <section>
                     <h2 className="text-2xl font-bold text-black mb-6 flex items-center gap-2">
                         <span className="w-2 h-8 bg-blue-500 rounded-full"></span>
-                        Search Studios
+                        합주실 검색
                     </h2>
                     <RoomSearch initialRooms={rooms} />
                 </section>

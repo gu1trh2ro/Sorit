@@ -22,7 +22,7 @@ export default function RoomSearch({ initialRooms }: Props) {
             <div className="mb-8">
                 <input
                     type="text"
-                    placeholder="Search by name, location, or equipment..."
+                    placeholder="이름, 위치, 장비로 검색하세요..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full p-5 bg-white border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm"
@@ -40,7 +40,7 @@ export default function RoomSearch({ initialRooms }: Props) {
                             <div className="flex justify-between items-center">
                                 <div>
                                     <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">{room.name}</h3>
-                                    <p className="text-gray-500 text-sm">{room.location} | Capacity {room.capacity}</p>
+                                    <p className="text-gray-500 text-sm">{room.location} | 수용 인원 {room.capacity}명</p>
                                     <div className="mt-3 flex gap-2">
                                         {room.equipment.slice(0, 3).map((eq, i) => (
                                             <span key={i} className="text-xs bg-gray-100 px-2.5 py-1 rounded-md text-gray-600 font-medium border border-gray-200">
@@ -54,12 +54,12 @@ export default function RoomSearch({ initialRooms }: Props) {
                                         )}
                                     </div>
                                 </div>
-                                <span className="text-blue-500 font-bold group-hover:translate-x-1 transition-transform">View Details &rarr;</span>
+                                <span className="text-blue-500 font-bold group-hover:translate-x-1 transition-transform">상세 보기 &rarr;</span>
                             </div>
                         </Link>
                     ))
                 ) : (
-                    <p className="text-center text-gray-400 py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">No studios found matching your search.</p>
+                    <p className="text-center text-gray-400 py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">검색 결과가 없습니다.</p>
                 )}
             </div>
         </div>

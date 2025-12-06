@@ -10,9 +10,17 @@ export const revalidate = 0; // Disable caching for real-time data
 
 export default async function Home() {
   const supabase = await createClient();
-  const today = new Date();
-  const dateString = today.toISOString().split('T')[0];
-  const currentHour = today.getHours();
+
+  // Fix: Use KST (Korea Standard Time) instead of Server Time (UTC)
+  const now = new Date();
+  const kstDate = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+  const currentHour = kstDate.getHours();
+
+  // Format date as YYYY-MM-DD in KST
+  const year = kstDate.getFullYear();
+  const month = String(kstDate.getMonth() + 1).padStart(2, '0');
+  const day = String(kstDate.getDate()).padStart(2, '0');
+  const dateString = `${year}-${month}-${day}`;
 
   // 1. Fetch today's reservations for Room 1
   const { data: reservations } = await supabase
@@ -85,10 +93,10 @@ export default async function Home() {
         <section className="py-20 px-8 bg-white">
           <div className="max-w-7xl mx-auto">
             <h2 className="text-4xl font-black text-center text-black mb-4 tracking-tighter">
-              STUDIOS
+              합주실
             </h2>
             <p className="text-center text-gray-500 mb-12">
-              Professional Equipment & Perfect Acoustics
+              최고의 장비와 완벽한 방음 시설
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {rooms.map((room) => (
@@ -102,10 +110,10 @@ export default async function Home() {
         <section className="py-20 px-8 bg-gray-50 border-t border-gray-100">
           <div className="max-w-7xl mx-auto">
             <h2 className="text-4xl font-black text-center text-black mb-4 tracking-tighter">
-              AVAILABLE NOW
+              실시간 예약 현황
             </h2>
             <p className="text-center text-gray-500 mb-12">
-              Real-time schedule for {targetRoom.name}
+              {targetRoom.name}의 실시간 예약 현황입니다.
             </p>
 
             {availableSlots.length > 0 ? (
@@ -116,7 +124,7 @@ export default async function Home() {
               </div>
             ) : (
               <div className="text-center text-gray-400 py-12">
-                <p>No more slots available today.</p>
+                <p>오늘 남은 예약 타임이 없습니다.</p>
               </div>
             )}
           </div>

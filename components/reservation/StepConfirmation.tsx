@@ -13,9 +13,19 @@ interface StepConfirmationProps {
 }
 
 export default function StepConfirmation({ state }: StepConfirmationProps) {
+    const [user, setUser] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [pollId, setPollId] = useState<string | null>(null);
     const [shareUrl, setShareUrl] = useState<string | null>(null);
+
+    // Fetch user on mount
+    useState(() => {
+        const fetchUser = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            setUser(user);
+        };
+        fetchUser();
+    });
 
     const handleCreatePoll = async () => {
         setIsLoading(true);
@@ -36,11 +46,24 @@ export default function StepConfirmation({ state }: StepConfirmationProps) {
 
             // 2. Insert Creator's Vote (if any slots selected)
             if (Object.keys(state.selectedSlots).length > 0) {
+                // Determine user name:
+                // If '합주', use logged-in user's name.
+                // If '개인연습'/'휴식', title is the name.
+                // Fallback to '개설자' if no user found.
+                let creatorName = '개설자';
+                if (state.eventInfo.type === '합주') {
+                    if (user) {
+                        creatorName = user.user_metadata.full_name || user.email?.split('@')[0] || '개설자';
+                    }
+                } else {
+                    creatorName = state.eventInfo.title;
+                }
+
                 const { error: voteError } = await supabase
                     .from('scheduling_votes')
                     .insert({
                         poll_id: poll.id,
-                        user_name: '개설자', // TODO: Replace with real user name if auth exists
+                        user_name: creatorName,
                         selected_slots: state.selectedSlots,
                     });
 
@@ -71,36 +94,14 @@ export default function StepConfirmation({ state }: StepConfirmationProps) {
         const reservationsToInsert = [];
 
         // Iterate over selected slots to create reservation records
-        // Assuming selectedSlots is { "2024-12-05": ["13:00", "13:30", ...] }
         for (const [date, times] of Object.entries(state.selectedSlots)) {
             if (times.length === 0) continue;
 
-            // Simple logic: Create one reservation per continuous block or just one per slot?
-            // The current schema seems to support start_time/end_time.
-            // For simplicity in this MVP, let's create one record per 30min slot OR 
-            // try to merge them. Let's just create one record per slot for now to be safe and simple,
-            // or better: just pick the first and last time if they are continuous?
-            // Let's stick to the simplest: One reservation entry per selected time slot is probably bad for the DB.
-            // Let's try to group them.
-
-            // Grouping logic:
             const sortedTimes = [...times].sort();
-            // For now, let's just insert them as individual 30min blocks if the DB allows, 
-            // OR just insert one big block if they are continuous.
-            // Given the user said "13:00 to 18:00", that's a lot of slots.
-            // Let's just insert one record for the whole range for simplicity of the "Dashboard" view.
 
             if (sortedTimes.length > 0) {
                 const startTime = sortedTimes[0];
-                // Calculate end time: last slot + 30 mins
-                // This is a bit complex to do perfectly without date-fns here, but let's approximate.
-                // Actually, let's just insert each slot as a separate row for now to ensure "Heatmap" logic works if it uses rows.
-                // Wait, ReservationCalendar uses "start_time" and "end_time".
-                // If I insert 10 rows, the calendar will show 10 items. That's annoying.
-                // Let's try to just take the min and max.
-
                 const endTimeSlot = sortedTimes[sortedTimes.length - 1];
-                // Add 30 mins to end time string (e.g. "13:00" -> "13:30")
                 const [h, m] = endTimeSlot.split(':').map(Number);
                 const endDateObj = new Date();
                 endDateObj.setHours(h, m + 30);
@@ -114,20 +115,14 @@ export default function StepConfirmation({ state }: StepConfirmationProps) {
                     end_time: endTime,
                     event_type: state.eventInfo.type, // Save event type
                     status: 'confirmed',
-                    poll_id: pollId // Link back to poll if needed (schema might not have this, let's check)
+                    // poll_id: pollId // Schema check needed, omitting for now
                 });
             }
         }
 
-        // Check if schema has poll_id in reservations? 
-        // The schema file I viewed might have it or not. 
-        // Let's assume NOT for now based on standard fields, but I should check.
-        // Actually, I'll just omit poll_id from reservation insert to be safe, or check schema.
-        // The user didn't ask for linking.
-
         const { error } = await supabase
             .from('reservations')
-            .insert(reservationsToInsert.map(({ poll_id, ...rest }) => rest));
+            .insert(reservationsToInsert);
 
         if (error) throw error;
     };
@@ -136,6 +131,12 @@ export default function StepConfirmation({ state }: StepConfirmationProps) {
         if (shareUrl) {
             navigator.clipboard.writeText(shareUrl);
             alert('링크가 복사되었습니다!');
+        }
+    };
+
+    const handleShareNow = () => {
+        if (pollId) {
+            window.location.href = `/reservation/${pollId}`;
         }
     };
 
@@ -190,13 +191,23 @@ export default function StepConfirmation({ state }: StepConfirmationProps) {
                     </button>
                 </div>
 
-                <Button
-                    variant="primary"
-                    onClick={copyToClipboard}
-                    className="w-full py-4 text-lg shadow-lg"
-                >
-                    지금 공유할게요
-                </Button>
+                <div className="space-y-3">
+                    <Button
+                        variant="primary"
+                        onClick={handleShareNow}
+                        className="w-full py-4 text-lg shadow-lg"
+                    >
+                        지금 바로 투표하기
+                    </Button>
+
+                    <Button
+                        variant="outline"
+                        onClick={() => window.location.href = '/'}
+                        className="w-full py-4 text-lg border-gray-200 text-gray-600 hover:bg-gray-50"
+                    >
+                        홈으로 이동
+                    </Button>
+                </div>
             </div>
         );
     }
