@@ -24,7 +24,7 @@ export default function AuthButton({ user }: { user: User | null }) {
                         className="w-8 h-8 rounded-full border border-gray-200"
                     />
                 )}
-                <span className="text-sm font-medium text-gray-700 hidden md:block">
+                <span className="text-sm font-medium text-gray-700">
                     {user.user_metadata.full_name || user.email?.split('@')[0]}
                 </span>
             </Link>

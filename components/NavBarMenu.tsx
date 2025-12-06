@@ -60,8 +60,13 @@ export default function NavBarMenu({ user, children }: { user: User | null, chil
                         </li>
                     ))}
                 </ul>
-                <div onClick={() => setIsOpen(false)}>
-                    {children}
+                <div
+                    onClick={() => setIsOpen(false)}
+                    className="pt-8 border-t border-gray-100 w-full flex justify-center"
+                >
+                    <div className="scale-110">
+                        {children}
+                    </div>
                 </div>
             </div>
         </>
