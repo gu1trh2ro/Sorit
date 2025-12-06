@@ -2,6 +2,9 @@ import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
 import Footer from '@/components/Footer';
 import Link from 'next/link';
+import ReservationItem from '@/components/ReservationItem';
+
+export const revalidate = 0; // Disable caching to show latest status
 
 export default async function MyPage() {
     const supabase = await createClient();
@@ -11,15 +14,37 @@ export default async function MyPage() {
         redirect('/login');
     }
 
-    // Fetch My Reservations (Assuming user_name matches or we add user_id later)
-    // For now, let's try to fetch based on user_name matching the user's full name
+    // Fetch My Reservations
     const userName = user.user_metadata.full_name || user.email?.split('@')[0];
 
-    const { data: myReservations } = await supabase
+    // Fix: Use KST (Korea Standard Time) for current date/time
+    const now = new Date();
+    const kstDate = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+    const dateString = kstDate.getFullYear() + '-' +
+        String(kstDate.getMonth() + 1).padStart(2, '0') + '-' +
+        String(kstDate.getDate()).padStart(2, '0');
+
+    // Format time as HH:MM:SS
+    const timeString = String(kstDate.getHours()).padStart(2, '0') + ':' +
+        String(kstDate.getMinutes()).padStart(2, '0') + ':' +
+        String(kstDate.getSeconds()).padStart(2, '0');
+
+    const { data: allReservations } = await supabase
         .from('reservations')
         .select('*')
-        .ilike('user_name', `%${userName}%`) // Loose matching for now
-        .order('date', { ascending: false });
+        .ilike('user_name', `%${userName}%`)
+        .gte('date', dateString) // Fetch from today onwards
+        .neq('status', 'cancelled') // Hide cancelled ones
+        .order('date', { ascending: true });
+
+    // Filter out today's past events (e.g. if now is 20:00, hide 18:00 event)
+    const myReservations = allReservations?.filter(res => {
+        if (res.date > dateString) return true;
+        if (res.date === dateString) {
+            return res.end_time > timeString;
+        }
+        return false;
+    });
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -50,29 +75,18 @@ export default async function MyPage() {
                     <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-200">
                         <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                             <span className="w-1.5 h-6 bg-blue-500 rounded-full"></span>
-                            My Reservations
+                            My Upcoming Reservations
                         </h2>
 
                         {myReservations && myReservations.length > 0 ? (
                             <div className="space-y-4">
                                 {myReservations.map((res) => (
-                                    <div key={res.id} className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100 gap-4 md:gap-0">
-                                        <div>
-                                            <h3 className="font-bold text-gray-900">{res.event_type} - {res.user_name}</h3>
-                                            <p className="text-sm text-gray-500">
-                                                {res.date} | {res.start_time} - {res.end_time}
-                                            </p>
-                                        </div>
-                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${res.status === 'confirmed' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-                                            }`}>
-                                            {res.status.toUpperCase()}
-                                        </span>
-                                    </div>
+                                    <ReservationItem key={res.id} reservation={res} />
                                 ))}
                             </div>
                         ) : (
                             <div className="text-center py-12 text-gray-400">
-                                <p>No reservations found.</p>
+                                <p>No upcoming reservations found.</p>
                                 <Link href="/dashboard" className="text-blue-500 hover:underline mt-2 inline-block">
                                     Go to Dashboard
                                 </Link>
