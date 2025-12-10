@@ -70,14 +70,25 @@ export default function ReservationCalendar({ roomId }: Props) {
     }, [currentMonth, roomId]);
 
     // Filter reservations for the selected date
-    const selectedDateReservations = reservations.filter(res =>
-        isSameDay(parseISO(res.date), selectedDate)
-    ).sort((a, b) => a.start_time.localeCompare(b.start_time));
+    const [filterRoomId, setFilterRoomId] = useState<string>('all');
+
+    const selectedDateReservations = reservations.filter(res => {
+        const isSameDayMatch = isSameDay(parseISO(res.date), selectedDate);
+        if (!isSameDayMatch) return false;
+        if (filterRoomId === 'all') return true;
+        return String(res.room_id) === filterRoomId;
+    }).sort((a, b) => a.start_time.localeCompare(b.start_time));
 
     return (
         <div className="flex flex-col lg:flex-row gap-8">
             {/* Calendar Section */}
             <div className="flex-1 bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
+                {/* ... (Calendar Header & Grid - Unchanged) ... */}
+                {/* To keep the file concise, I'm assuming the above part is unchanged. 
+                    However, replace_file_content requires context. 
+                    Let's target the Return structure clearer or include more context if I can't skip.
+                    Actually, I can just replace the logic and the Details Section part efficiently if I target the right lines.
+                */}
                 {/* Header */}
                 <div className="flex items-center justify-between mb-6">
                     <button onClick={prevMonth} className="p-2 hover:bg-gray-50 rounded-full transition-colors text-gray-600">
@@ -108,6 +119,7 @@ export default function ReservationCalendar({ roomId }: Props) {
                         const isTodayDate = isToday(day);
 
                         const dayReservations = reservations.filter(res => res.date === dateStr);
+                        // Start dots logic customization if needed, but existing is fine.
                         const hasReservations = dayReservations.length > 0;
 
                         return (
@@ -142,19 +154,36 @@ export default function ReservationCalendar({ roomId }: Props) {
             </div>
 
             {/* Details Section */}
-            <div className="w-full lg:w-80 bg-gray-50 rounded-3xl p-6 border border-gray-100 h-fit">
+            <div className="w-full lg:w-96 bg-gray-50 rounded-3xl p-6 border border-gray-100 h-fit">
                 <h3 className="text-lg font-bold text-gray-900 mb-4">
                     {format(selectedDate, 'M월 d일 (E)', { locale: ko })} 일정
                 </h3>
 
-                <div className="space-y-3">
+                {/* Room Filter Tabs */}
+                <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
+                    <button
+                        onClick={() => setFilterRoomId('all')}
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${filterRoomId === 'all' ? 'bg-gray-900 text-white' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-100'}`}
+                    >
+                        전체
+                    </button>
+                    {rooms.map(room => (
+                        <button
+                            key={room.id}
+                            onClick={() => setFilterRoomId(room.id)}
+                            className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors ${filterRoomId === room.id ? 'bg-blue-600 text-white' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-100'}`}
+                        >
+                            {room.name}
+                        </button>
+                    ))}
+                </div>
+
+                <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1 custom-scrollbar">
                     {isLoading ? (
                         <div className="text-center py-8 text-gray-400 text-sm">로딩 중...</div>
                     ) : selectedDateReservations.length > 0 ? (
                         selectedDateReservations.map(res => (
                             <div key={res.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-
-
                                 <div className="flex justify-between items-start mb-1">
                                     <span className="font-bold text-gray-900 text-sm">{res.user_name}</span>
                                     <span className="text-xs font-medium px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full">
