@@ -150,6 +150,7 @@ function ReservationContent() {
                                     onChange={updateSlots}
                                     onNext={nextStep}
                                     eventType={state.eventInfo.type}
+                                    roomId={state.roomId} // [NEW] Pass roomId to filter availability
                                 />
                             )}
                             {state.step === 4 && (

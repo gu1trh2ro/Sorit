@@ -8,6 +8,7 @@ interface StepTimeGridProps {
     onChange: (slots: Record<string, string[]>) => void;
     onNext: () => void;
     eventType: string;
+    roomId: string; // [NEW] Added roomId prop
 }
 
 const TIME_SLOTS = Array.from({ length: 30 }, (_, i) => {
@@ -16,12 +17,12 @@ const TIME_SLOTS = Array.from({ length: 30 }, (_, i) => {
     return `${hour.toString().padStart(2, '0')}:${minute}`;
 }).filter(time => parseInt(time.split(':')[0]) < 24); // End at 23:30
 
-export default function StepTimeGrid({ dates, selectedSlots, onChange, onNext, eventType }: StepTimeGridProps) {
+export default function StepTimeGrid({ dates, selectedSlots, onChange, onNext, eventType, roomId }: StepTimeGridProps) {
     const [isDragging, setIsDragging] = useState(false);
     const [dragMode, setDragMode] = useState<'select' | 'deselect'>('select');
     const [occupiedSlots, setOccupiedSlots] = useState<Record<string, string[]>>({});
 
-    // Fetch existing reservations
+    // Fetch existing reservations (Filtered by Room ID)
     useEffect(() => {
         const fetchReservations = async () => {
             if (dates.length === 0) return;
@@ -30,6 +31,7 @@ export default function StepTimeGrid({ dates, selectedSlots, onChange, onNext, e
                 .from('reservations')
                 .select('date, start_time, end_time, event_type')
                 .in('date', dates)
+                .eq('room_id', parseInt(roomId) || 1) // [MODIFIED] Filter by Room ID
                 .eq('status', 'confirmed');
 
             if (error) {
@@ -73,7 +75,7 @@ export default function StepTimeGrid({ dates, selectedSlots, onChange, onNext, e
         };
 
         fetchReservations();
-    }, [dates, eventType]);
+    }, [dates, eventType, roomId]);
 
     const toggleSlot = (date: string, time: string) => {
         // Prevent toggling if occupied
