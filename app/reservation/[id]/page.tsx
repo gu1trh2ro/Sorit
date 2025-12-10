@@ -33,11 +33,13 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
     const [existingVotes, setExistingVotes] = useState<VoteData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [myName, setMyName] = useState('');
+    const [authName, setAuthName] = useState(''); // Store authenticated user name for My Page linkage
     const [mySlots, setMySlots] = useState<Record<string, string[]>>({});
 
     // Confirmation State
     const [confirmDate, setConfirmDate] = useState('');
     const [confirmTime, setConfirmTime] = useState('');
+    const [confirmEndTime, setConfirmEndTime] = useState('');
 
     // Helper to generate 30-minute intervals
     const generateTimeOptions = () => {
@@ -59,7 +61,10 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
                 const { data: { user } } = await supabase.auth.getUser();
                 if (user) {
                     const userName = user.user_metadata.full_name || user.email?.split('@')[0];
-                    if (userName) setMyName(userName);
+                    if (userName) {
+                        setMyName(userName);
+                        setAuthName(userName);
+                    }
                 }
 
                 // 1. Fetch Poll Info
@@ -123,8 +128,6 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
         }
     };
 
-    const [confirmEndTime, setConfirmEndTime] = useState('');
-
     const checkConflict = async (date: string, start: string, end: string) => {
         // Only check conflicts if the new event is '합주' (Band Practice)
         // User Rule: '합주' vs '합주' is NOT allowed. '합주' vs '개인연습' IS allowed.
@@ -167,11 +170,14 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
             }
 
             // 2. Create Reservation
+            // Construct user_name so it appears in My Page (which filters by authName)
+            const reservationName = authName ? `${poll.title} (${authName})` : poll.title;
+
             const { error: reservationError } = await supabase
                 .from('reservations')
                 .insert({
                     room_id: 1, // Default to Room 1 for now
-                    user_name: poll.title, // Use poll title as reservation name
+                    user_name: reservationName,
                     date: confirmDate,
                     start_time: confirmTime,
                     end_time: confirmEndTime,
@@ -308,10 +314,10 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
                                             onClick={() => {
                                                 setConfirmDate(slot.date);
                                                 setConfirmTime(slot.time);
-                                                // Auto-set end time to +1 hour for convenience
+                                                // Auto-set end time to +2 hours for convenience (User Feedback)
                                                 const [h, m] = slot.time.split(':').map(Number);
                                                 const endDate = new Date();
-                                                endDate.setHours(h + 1, m);
+                                                endDate.setHours(h + 2, m);
                                                 const endTimeStr = `${endDate.getHours().toString().padStart(2, '0')}:${endDate.getMinutes().toString().padStart(2, '0')}`;
                                                 setConfirmEndTime(endTimeStr);
                                             }}
