@@ -129,16 +129,19 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
     };
 
     const checkConflict = async (date: string, start: string, end: string) => {
+        // [MODIFIED] Extract REAL event type and roomId from poll.event_type "Type_RoomId"
+        const [realEventType, roomIdStr] = poll?.event_type?.split('_') || ['합주', '1'];
+        const roomId = parseInt(roomIdStr) || 1;
+
         // Only check conflicts if the new event is '합주' (Band Practice)
-        // User Rule: '합주' vs '합주' is NOT allowed. '합주' vs '개인연습' IS allowed.
-        if (poll?.event_type !== '합주') return false;
+        if (realEventType !== '합주') return false;
 
         const { data, error } = await supabase
             .from('reservations')
             .select('id')
             .eq('date', date)
-            .eq('room_id', 1) // Default room
-            .eq('event_type', '합주') // Only check against other Band Practices
+            .eq('room_id', roomId) // Check conflicts for THIS room
+            .eq('event_type', '합주')
             .neq('status', 'cancelled')
             .or(`and(start_time.lte.${start},end_time.gt.${start}),and(start_time.lt.${end},end_time.gte.${end}),and(start_time.gte.${start},end_time.lte.${end})`);
 
@@ -169,6 +172,10 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
                 return;
             }
 
+            // [MODIFIED] Extract REAL event type and roomId
+            const [realEventType, roomIdStr] = poll.event_type.split('_');
+            const roomId = parseInt(roomIdStr) || 1;
+
             // 2. Create Reservation
             // Construct user_name so it appears in My Page (which filters by authName)
             const reservationName = authName ? `${poll.title} (${authName})` : poll.title;
@@ -176,12 +183,12 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
             const { error: reservationError } = await supabase
                 .from('reservations')
                 .insert({
-                    room_id: 1, // Default to Room 1 for now
+                    room_id: roomId, // Use parsed roomId
                     user_name: reservationName,
                     date: confirmDate,
                     start_time: confirmTime,
                     end_time: confirmEndTime,
-                    event_type: poll.event_type, // Save event type from poll
+                    event_type: realEventType || poll.event_type, // Use real type
                     status: 'confirmed'
                 });
 
@@ -212,6 +219,9 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
 
     if (!poll) return null;
 
+    // Display Logic dealing with "Type_RoomId"
+    const displayEventType = poll.event_type.split('_')[0];
+
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
             <main className="flex-grow pt-32 pb-20 px-4">
@@ -221,7 +231,7 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
                     <div className="p-8 border-b border-gray-100 bg-gray-50/50">
                         <div className="flex items-center justify-between mb-4">
                             <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 text-xs font-bold">
-                                {poll.event_type}
+                                {displayEventType}
                             </span>
                             <span className="text-sm text-gray-500">
                                 {existingVotes.length}명 참여 중 / 목표 {poll.headcount}명

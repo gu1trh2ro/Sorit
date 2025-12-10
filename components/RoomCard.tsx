@@ -44,6 +44,8 @@ export default function RoomCard({ room }: RoomCardProps) {
       </div>
 
       {/* Footer: External Link Button or Internal View Details Text */}
+      {/* Footer: External Link Button or Internal View Details Text */}
+      {/* [MODIFIED] External link button disabled
       {room.externalLink ? (
         <div className="mt-6">
           <a
@@ -62,13 +64,24 @@ export default function RoomCard({ room }: RoomCardProps) {
             예약 현황 확인하기 &rarr;
           </span>
         </div>
-      )}
+      )} 
+      */}
+
+      <div className="mt-6 text-right">
+        <span className="text-blue-500 font-bold text-sm group-hover:translate-x-1 transition-transform inline-block">
+          예약 현황 확인하기 &rarr;
+        </span>
+      </div>
     </div>
   );
 
+  // [MODIFIED] External link handling disabled per user request. 
+  // All rooms now route internally to /detail/[id].
+  /*
   if (room.externalLink) {
     return CardContent;
   }
+  */
 
   return (
     <Link href={`/detail/${room.id}`} className="block h-full">

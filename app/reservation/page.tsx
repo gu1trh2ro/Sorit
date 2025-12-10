@@ -12,6 +12,7 @@ import StepConfirmation from '@/components/reservation/StepConfirmation';
 
 export type ReservationState = {
     step: number;
+    roomId: string; // [NEW] Added roomId
     eventInfo: {
         title: string;
         type: string;
@@ -25,6 +26,7 @@ function ReservationContent() {
     const searchParams = useSearchParams();
     const [state, setState] = useState<ReservationState>({
         step: 1,
+        roomId: '1', // Default to Room 1
         eventInfo: { title: '', type: '합주', headcount: 4 },
         dates: [],
         selectedSlots: {},
@@ -32,6 +34,11 @@ function ReservationContent() {
 
     // Initialize state from query params if available
     useEffect(() => {
+        const roomIdParam = searchParams.get('roomId');
+        if (roomIdParam) {
+            setState(prev => ({ ...prev, roomId: roomIdParam }));
+        }
+
         const dateParam = searchParams.get('date');
         const startTimeParam = searchParams.get('startTime');
         const endTimeParam = searchParams.get('endTime');

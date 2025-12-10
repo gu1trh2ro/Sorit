@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 
 interface StepConfirmationProps {
     state: {
+        roomId: string;
         eventInfo: { title: string; type: string; headcount: number };
         dates: string[];
         selectedSlots: Record<string, string[]>;
@@ -35,7 +36,9 @@ export default function StepConfirmation({ state }: StepConfirmationProps) {
                 .from('scheduling_polls')
                 .insert({
                     title: state.eventInfo.title,
-                    event_type: state.eventInfo.type,
+                    // [HACK] Embed roomId in event_type to pass it to voting page without schema change
+                    // Format: "Type_RoomId" (e.g. "합주_2")
+                    event_type: `${state.eventInfo.type}_${state.roomId}`,
                     headcount: state.eventInfo.headcount,
                     dates: state.dates,
                 })
@@ -108,7 +111,7 @@ export default function StepConfirmation({ state }: StepConfirmationProps) {
                 const endTime = `${endDateObj.getHours().toString().padStart(2, '0')}:${endDateObj.getMinutes().toString().padStart(2, '0')}`;
 
                 reservationsToInsert.push({
-                    room_id: 1, // Default room
+                    room_id: parseInt(state.roomId) || 1, // Use roomId from state
                     user_name: state.eventInfo.title, // Use event title as user name
                     date: date,
                     start_time: startTime,

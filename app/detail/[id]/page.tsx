@@ -96,7 +96,7 @@ export default async function RoomDetail({ params }: Props) {
                         대시보드로 돌아가기
                     </Link>
                     <Link
-                        href={`/reservation?roomName=${encodeURIComponent(room.name)}`}
+                        href={`/reservation?roomId=${room.id}&roomName=${encodeURIComponent(room.name)}`}
                         className="px-8 py-3 bg-black text-white border-2 border-black rounded-lg hover:bg-gray-800 transition-colors font-bold shadow-lg hover:shadow-xl hover:-translate-y-1"
                     >
                         지금 예약하기
