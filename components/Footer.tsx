@@ -21,7 +21,7 @@ export default function Footer() {
               📧 jsh4360@pusan.ac.kr
             </p>
             <p className="text-gray-600 text-sm">
-              📞 010-5652-4360
+              📞 -
             </p>
           </div>
         </div>

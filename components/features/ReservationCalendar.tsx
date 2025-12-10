@@ -1,6 +1,8 @@
 'use client';
 
+
 import { useState, useEffect } from 'react';
+import { rooms } from '@/data/mockData';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, isToday, startOfWeek, endOfWeek, parseISO } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { supabase } from '@/lib/supabase';
@@ -151,10 +153,12 @@ export default function ReservationCalendar({ roomId }: Props) {
                     ) : selectedDateReservations.length > 0 ? (
                         selectedDateReservations.map(res => (
                             <div key={res.id} className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+
+
                                 <div className="flex justify-between items-start mb-1">
                                     <span className="font-bold text-gray-900 text-sm">{res.user_name}</span>
                                     <span className="text-xs font-medium px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full">
-                                        Room {res.room_id}
+                                        {rooms.find(r => r.id === String(res.room_id))?.name || `Room ${res.room_id}`}
                                     </span>
                                 </div>
                                 {/* Event Type Badge */}
