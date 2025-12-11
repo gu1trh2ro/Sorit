@@ -241,6 +241,14 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
         }
         if (!poll) return;
 
+        // [NEW] Check for headcount warning
+        if (poll.headcount && existingVotes.length < poll.headcount) {
+            const confirmed = window.confirm(
+                `현재 투표 인원(${existingVotes.length}명)이 목표 인원(${poll.headcount}명)보다 적습니다.\n그래도 예약을 확정하시겠습니까?`
+            );
+            if (!confirmed) return;
+        }
+
         try {
             // 1. Check for conflicts
             const hasConflict = await checkConflict(confirmDate, confirmTime, confirmEndTime);
