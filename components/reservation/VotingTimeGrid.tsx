@@ -7,6 +7,7 @@ interface VotingTimeGridProps {
     existingVotes: { user_name: string; selected_slots: Record<string, string[]> }[];
     mySlots: Record<string, string[]>;
     onChange: (slots: Record<string, string[]>) => void;
+    occupiedSlots: Record<string, string[]>; // [NEW]
 }
 
 const TIME_SLOTS = Array.from({ length: 24 }, (_, i) => {
@@ -15,7 +16,7 @@ const TIME_SLOTS = Array.from({ length: 24 }, (_, i) => {
     return `${hour.toString().padStart(2, '0')}:${minute}`;
 }).filter(time => parseInt(time.split(':')[0]) < 22); // End at 22:00
 
-export default function VotingTimeGrid({ dates, existingVotes, mySlots, onChange }: VotingTimeGridProps) {
+export default function VotingTimeGrid({ dates, existingVotes, mySlots, onChange, occupiedSlots }: VotingTimeGridProps) {
     const [isDragging, setIsDragging] = useState(false);
     const [dragMode, setDragMode] = useState<'select' | 'deselect'>('select');
     const [hoveredSlot, setHoveredSlot] = useState<{ date: string; time: string; voters: string[] } | null>(null);
@@ -37,6 +38,8 @@ export default function VotingTimeGrid({ dates, existingVotes, mySlots, onChange
     const maxVotes = existingVotes.length || 1; // Avoid division by zero
 
     const toggleSlot = (date: string, time: string) => {
+        if (occupiedSlots[date]?.includes(time)) return; // [NEW] Block if occupied
+
         const currentSlots = mySlots[date] || [];
         const isSelected = currentSlots.includes(time);
 
@@ -54,6 +57,8 @@ export default function VotingTimeGrid({ dates, existingVotes, mySlots, onChange
     };
 
     const handleMouseDown = (date: string, time: string) => {
+        if (occupiedSlots[date]?.includes(time)) return; // [NEW] Block if occupied
+
         setIsDragging(true);
         const isSelected = (mySlots[date] || []).includes(time);
         setDragMode(isSelected ? 'deselect' : 'select');
@@ -66,6 +71,7 @@ export default function VotingTimeGrid({ dates, existingVotes, mySlots, onChange
         setHoveredSlot({ date, time, voters });
 
         if (!isDragging) return;
+        if (occupiedSlots[date]?.includes(time)) return; // [NEW] Block if occupied
 
         const currentSlots = mySlots[date] || [];
         const isSelected = currentSlots.includes(time);
@@ -116,6 +122,7 @@ export default function VotingTimeGrid({ dates, existingVotes, mySlots, onChange
                             </div>
 
                             {TIME_SLOTS.map(time => {
+                                const isOccupied = occupiedSlots[date]?.includes(time); // [NEW]
                                 const voteCount = getVoteCount(date, time);
                                 const intensity = voteCount / maxVotes; // 0.0 to 1.0
                                 const isMySelected = (mySlots[date] || []).includes(time);
@@ -126,13 +133,17 @@ export default function VotingTimeGrid({ dates, existingVotes, mySlots, onChange
                                         onMouseDown={() => handleMouseDown(date, time)}
                                         onMouseEnter={() => handleMouseEnter(date, time)}
                                         onMouseLeave={handleMouseLeaveSlot}
-                                        className="relative h-8 rounded-md cursor-pointer transition-all border border-gray-100 group"
-                                        style={{
+                                        className={`
+                                            relative h-8 rounded-md transition-all border border-gray-100 group
+                                            ${isOccupied ? 'bg-gray-200 cursor-not-allowed opacity-50' : 'cursor-pointer'}
+                                        `}
+                                        style={!isOccupied ? {
                                             backgroundColor: `rgba(34, 197, 94, ${intensity * 0.8})`, // Green with opacity
-                                        }}
+                                        } : {}}
+                                        title={isOccupied ? '이미 예약된 시간입니다' : ''}
                                     >
                                         {/* My Selection Overlay (Blue Border/Fill) */}
-                                        {isMySelected && (
+                                        {isMySelected && !isOccupied && (
                                             <div className="absolute inset-0 border-2 border-blue-600 bg-blue-500/30 rounded-md z-10 pointer-events-none" />
                                         )}
                                     </div>

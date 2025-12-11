@@ -37,6 +37,7 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
     const [authName, setAuthName] = useState(''); // Store authenticated user name for My Page linkage
     const [mySlots, setMySlots] = useState<Record<string, string[]>>({});
     const [myVoteId, setMyVoteId] = useState<number | null>(null); // [NEW] Store existing vote ID
+    const [occupiedSlots, setOccupiedSlots] = useState<Record<string, string[]>>({}); // [NEW] Store occupied slots
 
     // Confirmation State
     const [confirmDate, setConfirmDate] = useState('');
@@ -82,6 +83,43 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
                 if (pollError) throw pollError;
                 setPoll(pollData);
 
+                // [NEW] 1.5 Fetch Occupied Slots (Confirmed Reservations)
+                // Extract roomId from event_type (e.g. "합주_2" -> 2)
+                const [, roomIdStr] = pollData.event_type?.split('_') || ['', '1'];
+                const roomId = parseInt(roomIdStr) || 1;
+
+                if (pollData.dates.length > 0) {
+                    const { data: reservations, error: resError } = await supabase
+                        .from('reservations')
+                        .select('date, start_time, end_time')
+                        .in('date', pollData.dates)
+                        .eq('room_id', roomId)
+                        .eq('status', 'confirmed'); // Only confirmed reservations
+
+                    if (resError) console.error('Error fetching reservations:', resError);
+
+                    if (reservations) {
+                        const occupied: Record<string, string[]> = {};
+                        reservations.forEach(res => {
+                            if (!occupied[res.date]) occupied[res.date] = [];
+
+                            // Fill 30-min slots
+                            const start = parseInt(res.start_time.split(':')[0]) * 60 + parseInt(res.start_time.split(':')[1]);
+                            const end = parseInt(res.end_time.split(':')[0]) * 60 + parseInt(res.end_time.split(':')[1]);
+
+                            for (let t = start; t < end; t += 30) {
+                                const h = Math.floor(t / 60).toString().padStart(2, '0');
+                                const m = (t % 60).toString().padStart(2, '0');
+                                const timeStr = `${h}:${m}`;
+                                if (!occupied[res.date].includes(timeStr)) {
+                                    occupied[res.date].push(timeStr);
+                                }
+                            }
+                        });
+                        setOccupiedSlots(occupied);
+                    }
+                }
+
                 // 2. Fetch Existing Votes
                 const { data: votesData, error: votesError } = await supabase
                     .from('scheduling_votes')
@@ -100,8 +138,6 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
                         console.log('Restored existing vote:', myVote);
                     } else {
                         // [Fix for existing 'Creator' bugs]
-                        // If I have no vote, but there is a '개설자' vote, assume it's mine (since I am the creator)
-                        // and let me edit it. When saved, it will update name to my real name.
                         const creatorVote = votesData.find((v: VoteData) => v.user_name === '개설자');
                         if (creatorVote) {
                             setMySlots(creatorVote.selected_slots);
@@ -307,6 +343,7 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
                                     existingVotes={existingVotes}
                                     mySlots={mySlots}
                                     onChange={setMySlots}
+                                    occupiedSlots={occupiedSlots} // [NEW] Pass occupiedSlots
                                 />
                             </div>
 
