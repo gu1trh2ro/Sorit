@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from '@/components/Button';
 import { supabase } from '@/lib/supabase';
 
@@ -20,13 +20,13 @@ export default function StepConfirmation({ state }: StepConfirmationProps) {
     const [shareUrl, setShareUrl] = useState<string | null>(null);
 
     // Fetch user on mount
-    useState(() => {
+    useEffect(() => {
         const fetchUser = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             setUser(user);
         };
         fetchUser();
-    });
+    }, []);
 
     const handleCreatePoll = async () => {
         setIsLoading(true);

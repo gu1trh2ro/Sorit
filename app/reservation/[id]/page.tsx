@@ -20,6 +20,7 @@ type PollData = {
 };
 
 type VoteData = {
+    id: number;
     user_name: string;
     selected_slots: Record<string, string[]>;
 };
@@ -35,6 +36,7 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
     const [myName, setMyName] = useState('');
     const [authName, setAuthName] = useState(''); // Store authenticated user name for My Page linkage
     const [mySlots, setMySlots] = useState<Record<string, string[]>>({});
+    const [myVoteId, setMyVoteId] = useState<number | null>(null); // [NEW] Store existing vote ID
 
     // Confirmation State
     const [confirmDate, setConfirmDate] = useState('');
@@ -59,11 +61,14 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
             try {
                 // 0. Fetch User Session
                 const { data: { user } } = await supabase.auth.getUser();
+                let currentUserName = '';
+
                 if (user) {
                     const userName = user.user_metadata.full_name || user.email?.split('@')[0];
                     if (userName) {
                         setMyName(userName);
                         setAuthName(userName);
+                        currentUserName = userName;
                     }
                 }
 
@@ -85,6 +90,16 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
 
                 if (votesError) throw votesError;
                 setExistingVotes(votesData || []);
+
+                // [NEW] Check for existing vote by this user
+                if (currentUserName && votesData) {
+                    const myVote = votesData.find((v: VoteData) => v.user_name === currentUserName);
+                    if (myVote) {
+                        setMySlots(myVote.selected_slots);
+                        setMyVoteId(myVote.id);
+                        console.log('Restored existing vote:', myVote);
+                    }
+                }
 
             } catch (error) {
                 console.error('Error fetching poll:', error);
@@ -109,17 +124,32 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
         }
 
         try {
-            const { error } = await supabase
-                .from('scheduling_votes')
-                .insert({
-                    poll_id: id,
-                    user_name: myName,
-                    selected_slots: mySlots,
-                });
+            if (myVoteId) {
+                // [UPDATE] Update existing vote
+                const { error } = await supabase
+                    .from('scheduling_votes')
+                    .update({
+                        user_name: myName,
+                        selected_slots: mySlots,
+                    })
+                    .eq('id', myVoteId);
 
-            if (error) throw error;
+                if (error) throw error;
+                alert('투표가 수정되었습니다!');
+            } else {
+                // [INSERT] Create new vote
+                const { error } = await supabase
+                    .from('scheduling_votes')
+                    .insert({
+                        poll_id: id,
+                        user_name: myName,
+                        selected_slots: mySlots,
+                    });
 
-            alert('투표가 완료되었습니다!');
+                if (error) throw error;
+                alert('투표가 완료되었습니다!');
+            }
+
             window.location.reload(); // Refresh to show new data
 
         } catch (error) {
