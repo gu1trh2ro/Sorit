@@ -6,8 +6,7 @@ import Button from './Button';
 
 const BACKGROUND_IMAGES = [
   "/images/KakaoTalk_20251203_155817460.jpg",
-  "/images/KakaoTalk_20251203_155817460_01.jpg",
-  "/images/KakaoTalk_20251203_155817460_02.jpg",
+
   "/images/KakaoTalk_20251203_155817460_03.jpg",
   "/images/KakaoTalk_20251203_155817460_04.jpg",
   "/images/KakaoTalk_20251203_155817460_05.jpg",
