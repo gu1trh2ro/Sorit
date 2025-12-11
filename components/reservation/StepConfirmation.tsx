@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import Button from '@/components/Button';
-import { supabase } from '@/lib/supabase';
+
+import { createClient } from '@/utils/supabase/client';
 
 interface StepConfirmationProps {
     state: {
@@ -22,6 +23,7 @@ export default function StepConfirmation({ state }: StepConfirmationProps) {
     // Fetch user on mount
     useEffect(() => {
         const fetchUser = async () => {
+            const supabase = createClient();
             const { data: { user } } = await supabase.auth.getUser();
             setUser(user);
         };
@@ -30,6 +32,7 @@ export default function StepConfirmation({ state }: StepConfirmationProps) {
 
     const handleCreatePoll = async () => {
         setIsLoading(true);
+        const supabase = createClient();
         try {
             // 1. Create Poll
             const { data: poll, error: pollError } = await supabase
@@ -51,11 +54,11 @@ export default function StepConfirmation({ state }: StepConfirmationProps) {
                 const { data: { user: currentUser } } = await supabase.auth.getUser();
 
                 let creatorName = '개설자';
-                if (state.eventInfo.type === '합주') {
-                    if (currentUser) {
-                        creatorName = currentUser.user_metadata.full_name || currentUser.email?.split('@')[0] || '개설자';
-                    }
-                } else {
+                if (currentUser) {
+                    // Always prefer real name if logged in
+                    creatorName = currentUser.user_metadata.full_name || currentUser.email?.split('@')[0] || '개설자';
+                } else if (state.eventInfo.type !== '합주') {
+                    // Fallback to title for Personal Practice/Break if not logged in (unlikely)
                     creatorName = state.eventInfo.title;
                 }
 
@@ -91,6 +94,7 @@ export default function StepConfirmation({ state }: StepConfirmationProps) {
 
     // Helper to create reservation for single person
     const createSinglePersonReservation = async (pollId: string) => {
+        const supabase = createClient(); // [FIX] Use correct client
         const reservationsToInsert = [];
 
         // Iterate over selected slots to create reservation records
