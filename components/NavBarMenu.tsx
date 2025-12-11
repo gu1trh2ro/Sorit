@@ -15,6 +15,10 @@ export default function NavBarMenu({ user, children }: { user: User | null, chil
         { href: '/dashboard', label: 'DASHBOARD' },
     ];
 
+    if (user) {
+        menuItems.push({ href: '/mypage', label: 'MYPAGE' });
+    }
+
     return (
         <>
             {/* Desktop Menu */}
