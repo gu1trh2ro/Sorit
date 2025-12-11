@@ -36,8 +36,6 @@ export default function StepConfirmation({ state }: StepConfirmationProps) {
                 .from('scheduling_polls')
                 .insert({
                     title: state.eventInfo.title,
-                    // [HACK] Embed roomId in event_type to pass it to voting page without schema change
-                    // Format: "Type_RoomId" (e.g. "합주_2")
                     event_type: `${state.eventInfo.type}_${state.roomId}`,
                     headcount: state.eventInfo.headcount,
                     dates: state.dates,
@@ -49,14 +47,13 @@ export default function StepConfirmation({ state }: StepConfirmationProps) {
 
             // 2. Insert Creator's Vote (if any slots selected)
             if (Object.keys(state.selectedSlots).length > 0) {
-                // Determine user name:
-                // If '합주', use logged-in user's name.
-                // If '개인연습'/'휴식', title is the name.
-                // Fallback to '개설자' if no user found.
+                // [MODIFIED] Fetch user directly to ensure we have the latest session
+                const { data: { user: currentUser } } = await supabase.auth.getUser();
+
                 let creatorName = '개설자';
                 if (state.eventInfo.type === '합주') {
-                    if (user) {
-                        creatorName = user.user_metadata.full_name || user.email?.split('@')[0] || '개설자';
+                    if (currentUser) {
+                        creatorName = currentUser.user_metadata.full_name || currentUser.email?.split('@')[0] || '개설자';
                     }
                 } else {
                     creatorName = state.eventInfo.title;

@@ -98,6 +98,16 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
                         setMySlots(myVote.selected_slots);
                         setMyVoteId(myVote.id);
                         console.log('Restored existing vote:', myVote);
+                    } else {
+                        // [Fix for existing 'Creator' bugs]
+                        // If I have no vote, but there is a '개설자' vote, assume it's mine (since I am the creator)
+                        // and let me edit it. When saved, it will update name to my real name.
+                        const creatorVote = votesData.find((v: VoteData) => v.user_name === '개설자');
+                        if (creatorVote) {
+                            setMySlots(creatorVote.selected_slots);
+                            setMyVoteId(creatorVote.id);
+                            console.log('Adopting Creator vote:', creatorVote);
+                        }
                     }
                 }
 
