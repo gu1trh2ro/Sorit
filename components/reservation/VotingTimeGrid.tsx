@@ -10,11 +10,11 @@ interface VotingTimeGridProps {
     occupiedSlots: Record<string, string[]>; // [NEW]
 }
 
-const TIME_SLOTS = Array.from({ length: 24 }, (_, i) => {
+const TIME_SLOTS = Array.from({ length: 30 }, (_, i) => {
     const hour = Math.floor(i / 2) + 9; // Start from 09:00
     const minute = i % 2 === 0 ? '00' : '30';
     return `${hour.toString().padStart(2, '0')}:${minute}`;
-}).filter(time => parseInt(time.split(':')[0]) < 22); // End at 22:00
+}).filter(time => parseInt(time.split(':')[0]) < 24); // End at 23:30
 
 export default function VotingTimeGrid({ dates, existingVotes, mySlots, onChange, occupiedSlots }: VotingTimeGridProps) {
     const [isDragging, setIsDragging] = useState(false);
@@ -101,11 +101,11 @@ export default function VotingTimeGrid({ dates, existingVotes, mySlots, onChange
         <div className="flex flex-col md:flex-row gap-8 items-start">
             {/* Left: Grid */}
             <div className="flex-1 w-full overflow-x-auto pb-4 select-none">
-                <div className="flex gap-4 min-w-max justify-center">
-                    {/* Time Labels Column */}
-                    <div className="flex flex-col gap-1 pt-10">
+                <div className="flex gap-4 min-w-max">
+                    {/* Time Labels Column - Sticky */}
+                    <div className="flex flex-col gap-1 pt-10 sticky left-0 bg-white z-10 pr-2">
                         {TIME_SLOTS.map(time => (
-                            <div key={time} className="h-8 flex items-center justify-end text-xs text-gray-400 pr-2">
+                            <div key={time} className="h-8 flex items-center justify-end text-xs text-gray-400">
                                 {time}
                             </div>
                         ))}
