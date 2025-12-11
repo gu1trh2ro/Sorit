@@ -94,6 +94,7 @@ export default function VotingPage({ params }: { params: Promise<{ id: string }>
                         .select('date, start_time, end_time')
                         .in('date', pollData.dates)
                         .eq('room_id', roomId)
+                        .eq('event_type', '합주') // [MODIFIED] Only 'Band Practice' blocks voting
                         .eq('status', 'confirmed'); // Only confirmed reservations
 
                     if (resError) console.error('Error fetching reservations:', resError);

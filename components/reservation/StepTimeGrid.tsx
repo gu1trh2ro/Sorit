@@ -144,10 +144,10 @@ export default function StepTimeGrid({ dates, selectedSlots, onChange, onNext, e
             {/* Time Grid */}
             <div className="overflow-x-auto pb-4">
                 <div className="flex gap-4 min-w-max">
-                    {/* Time Labels Column */}
-                    <div className="flex flex-col gap-1 pt-10">
+                    {/* Time Labels Column - Sticky */}
+                    <div className="flex flex-col gap-1 pt-10 sticky left-0 bg-white z-10 pr-2">
                         {TIME_SLOTS.map(time => (
-                            <div key={time} className="h-8 flex items-center justify-end text-xs text-gray-400 pr-2">
+                            <div key={time} className="h-8 flex items-center justify-end text-xs text-gray-400">
                                 {time}
                             </div>
                         ))}
